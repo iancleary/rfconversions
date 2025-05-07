@@ -1,6 +1,14 @@
 [package]
+authors = ["Ian Cleary <rust@iancleary.me>"]
+description = "Common Radio Frequency conversion equations for RF Modeling"
+documentation = "https://docs.rs/rfconversions"
+edition = "2021"
+homepage = "https://github.com/iancleary/rfconversions"
+license = "MIT"
 name = "rfconversions"
+repository = "https://github.com/iancleary/rfconversions"
 version = "0.1.0"
-edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
