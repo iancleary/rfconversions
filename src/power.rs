@@ -80,7 +80,7 @@ mod tests {
         let linear: f64 = super::db_to_linear(db);
 
         // -3.0 dB isn't exactly half
-        // therefore -13 dB isn't exactly 1/20 
+        // therefore -13 dB isn't exactly 1/20
         assert_eq!(0.05011872336272722, linear);
     }
 
@@ -108,7 +108,7 @@ mod tests {
         let db: f64 = super::linear_to_db(linear);
 
         // -3.0 dB isn't exactly half
-        // therefore -13 dB isn't exactly 1/20 
+        // therefore -13 dB isn't exactly 1/20
         assert_eq!(-13.0, db);
     }
 }
