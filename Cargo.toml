@@ -7,7 +7,7 @@ homepage = "https://github.com/iancleary/rfconversions"
 license = "MIT"
 name = "rfconversions"
 repository = "https://github.com/iancleary/rfconversions"
-version = "0.4.0"
+version = "0.5.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
