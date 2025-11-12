@@ -2,32 +2,80 @@ pub fn frequency_to_wavelength(frequency: f64) -> f64 {
     crate::constants::SPEED_OF_LIGHT / frequency
 }
 
+pub fn thz_to_ghz(thz: f64) -> f64 {
+    thz * 1e3
+}
+
+pub fn thz_to_mhz(thz: f64) -> f64 {
+    thz * 1e6
+}
+
+pub fn thz_to_khz(thz: f64) -> f64 {
+    thz * 1e9
+}
+
 pub fn thz_to_hz(thz: f64) -> f64 {
     thz * 1e12
 }
 
-pub fn hz_to_thz(hz: f64) -> f64 {
-    hz / 1e12
+pub fn ghz_to_thz(ghz: f64) -> f64 {
+    ghz / 1e3
+}
+
+pub fn ghz_to_mhz(ghz: f64) -> f64 {
+    ghz * 1e3
+}
+
+pub fn ghz_to_khz(ghz: f64) -> f64 {
+    ghz * 1e6
 }
 
 pub fn ghz_to_hz(ghz: f64) -> f64 {
     ghz * 1e9
 }
 
-pub fn hz_to_ghz(hz: f64) -> f64 {
-    hz / 1e9
+pub fn mhz_to_thz(mhz: f64) -> f64 {
+    mhz / 1e6
+}
+
+pub fn mhz_to_ghz(mhz: f64) -> f64 {
+    mhz / 1e3
+}
+
+pub fn mhz_to_khz(mhz: f64) -> f64 {
+    mhz * 1e3
 }
 
 pub fn mhz_to_hz(mhz: f64) -> f64 {
     mhz * 1e6
 }
 
-pub fn hz_to_mhz(hz: f64) -> f64 {
-    hz / 1e6
+pub fn khz_to_thz(khz: f64) -> f64 {
+    khz / 1e9
+}
+
+pub fn khz_to_ghz(khz: f64) -> f64 {
+    khz / 1e6
+}
+
+pub fn khz_to_mhz(khz: f64) -> f64 {
+    khz / 1e3
 }
 
 pub fn khz_to_hz(khz: f64) -> f64 {
     khz * 1e3
+}
+
+pub fn hz_to_thz(hz: f64) -> f64 {
+    hz / 1e12
+}
+
+pub fn hz_to_ghz(hz: f64) -> f64 {
+    hz / 1e9
+}
+
+pub fn hz_to_mhz(hz: f64) -> f64 {
+    hz / 1e6
 }
 
 pub fn hz_to_khz(hz: f64) -> f64 {
@@ -68,18 +116,35 @@ mod tests {
 
     #[test]
     fn test_frequency_conversions_hz_khz_mhz_ghz_thz() {
+        // Values chosen such that they all convert to 1 THz or 1,000,000,000,000 Hz
         let thz = 1.0;
         let ghz = 1000.0;
         let mhz = 1_000_000.0;
         let khz = 1_000_000_000.0;
         let hz = 1_000_000_000_000.0;
+        assert_eq!(super::thz_to_ghz(thz), ghz);
+        assert_eq!(super::thz_to_mhz(thz), mhz);
+        assert_eq!(super::thz_to_khz(thz), khz);
         assert_eq!(super::thz_to_hz(thz), hz);
-        assert_eq!(super::hz_to_thz(hz), thz);
+
+        assert_eq!(super::ghz_to_thz(ghz), thz);
+        assert_eq!(super::ghz_to_mhz(ghz), mhz);
+        assert_eq!(super::ghz_to_khz(ghz), khz);
         assert_eq!(super::ghz_to_hz(ghz), hz);
-        assert_eq!(super::hz_to_ghz(hz), ghz);
+
+        assert_eq!(super::mhz_to_thz(mhz), thz);
+        assert_eq!(super::mhz_to_ghz(mhz), ghz);
+        assert_eq!(super::mhz_to_khz(mhz), khz);
         assert_eq!(super::mhz_to_hz(mhz), hz);
-        assert_eq!(super::hz_to_mhz(hz), mhz);
+
+        assert_eq!(super::khz_to_thz(khz), thz);
+        assert_eq!(super::khz_to_ghz(khz), ghz);
+        assert_eq!(super::khz_to_mhz(khz), mhz);
         assert_eq!(super::khz_to_hz(khz), hz);
+
+        assert_eq!(super::hz_to_thz(hz), thz);
+        assert_eq!(super::hz_to_ghz(hz), ghz);
+        assert_eq!(super::hz_to_mhz(hz), mhz);
         assert_eq!(super::hz_to_khz(hz), khz);
     }
 }
