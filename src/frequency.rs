@@ -2,6 +2,10 @@ pub fn frequency_to_wavelength(frequency: f64) -> f64 {
     crate::constants::SPEED_OF_LIGHT / frequency
 }
 
+pub fn wavelength_to_frequency(wavelength: f64) -> f64 {
+    crate::constants::SPEED_OF_LIGHT / wavelength
+}
+
 pub fn thz_to_ghz(thz: f64) -> f64 {
     thz * 1e3
 }
@@ -147,4 +151,28 @@ mod tests {
         assert_eq!(super::hz_to_mhz(hz), mhz);
         assert_eq!(super::hz_to_khz(hz), khz);
     }
+
+    #[test]
+    fn wavelength_to_frequency_roundtrip_one_gigahertz() {
+        let base: f64 = 10.0;
+        let frequency: f64 = 1.0 * base.powf(9.0);
+
+        let wavelength: f64 = super::frequency_to_wavelength(frequency);
+        let result: f64 = super::wavelength_to_frequency(wavelength);
+
+        assert_eq!(frequency, result);
+    }
+
+    #[test]
+    fn wavelength_to_frequency_ka_band_30_ghz() {
+        let base: f64 = 10.0;
+        let frequency: f64 = 30.0 * base.powf(9.0);
+
+        let wavelength: f64 = super::frequency_to_wavelength(frequency);
+        assert_eq!(0.009993081933333333, wavelength);
+
+        let result: f64 = super::wavelength_to_frequency(wavelength);
+        assert_eq!(frequency, result);
+    }
+
 }
