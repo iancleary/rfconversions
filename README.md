@@ -17,6 +17,22 @@ use rfconversions::power;
 let dbm = power::watts_to_dbm(1.0);    // 30.0 dBm
 let watts = power::dbm_to_watts(30.0);  // 1.0 W
 
+// Milliwatts ↔ dBm
+let mw = power::dbm_to_milliwatts(0.0); // 1.0 mW
+let dbm = power::milliwatts_to_dbm(1.0); // 0.0 dBm
+
+// Watts ↔ dBW
+let dbw = power::watts_to_dbw(1.0);     // 0.0 dBW
+let watts = power::dbw_to_watts(0.0);   // 1.0 W
+
+// Milliwatts ↔ dBW
+let dbw = power::milliwatts_to_dbw(1000.0); // 0.0 dBW
+let mw = power::dbw_to_milliwatts(0.0);     // 1000.0 mW
+
+// dBm ↔ dBW
+let dbw = power::dbm_to_dbw(30.0);      // 0.0 dBW
+let dbm = power::dbw_to_dbm(0.0);       // 30.0 dBm
+
 // dB ↔ Linear
 let linear = power::db_to_linear(30.0); // 1000.0
 let db = power::linear_to_db(1000.0);   // 30.0 dB
@@ -91,9 +107,18 @@ let c = constants::SPEED_OF_LIGHT; // 299_792_458.0 m/s
 |---|---|---|
 | `power` | `watts_to_dbm(f64) → f64` | Watts to dBm |
 | `power` | `dbm_to_watts(f64) → f64` | dBm to Watts |
+| `power` | `dbm_to_milliwatts(f64) → f64` | dBm to milliwatts |
+| `power` | `milliwatts_to_dbm(f64) → f64` | Milliwatts to dBm |
+| `power` | `watts_to_dbw(f64) → f64` | Watts to dBW |
+| `power` | `dbw_to_watts(f64) → f64` | dBW to Watts |
+| `power` | `milliwatts_to_dbw(f64) → f64` | Milliwatts to dBW |
+| `power` | `dbw_to_milliwatts(f64) → f64` | dBW to milliwatts |
+| `power` | `dbm_to_dbw(f64) → f64` | dBm to dBW |
+| `power` | `dbw_to_dbm(f64) → f64` | dBW to dBm |
 | `power` | `db_to_linear(f64) → f64` | dB to linear ratio |
 | `power` | `linear_to_db(f64) → f64` | Linear ratio to dB |
 | `frequency` | `frequency_to_wavelength(f64) → f64` | Frequency (Hz) to wavelength (m) |
+| `frequency` | `wavelength_to_frequency(f64) → f64` | Wavelength (m) to frequency (Hz) |
 | `frequency` | `hz_to_khz`, `hz_to_mhz`, `hz_to_ghz`, `hz_to_thz` | Hz scaling up |
 | `frequency` | `khz_to_hz`, `khz_to_mhz`, `khz_to_ghz`, `khz_to_thz` | kHz scaling |
 | `frequency` | `mhz_to_hz`, `mhz_to_khz`, `mhz_to_ghz`, `mhz_to_thz` | MHz scaling |
@@ -108,6 +133,7 @@ let c = constants::SPEED_OF_LIGHT; // 299_792_458.0 m/s
 | `noise` | `noise_power_from_bandwidth(f64, f64) → f64` | kTB noise power (W) |
 | `p1db` | `input_to_output_db(f64, f64) → f64` | IP1dB + Gain → OP1dB |
 | `p1db` | `output_to_input_db(f64, f64) → f64` | OP1dB − Gain → IP1dB |
+| `p1db` | `cascade_output_p1db(f64, f64, f64) → f64` | Cascade OP1dB calculation |
 | `constants` | `SPEED_OF_LIGHT` | 299 792 458 m/s |
 
 ## License
