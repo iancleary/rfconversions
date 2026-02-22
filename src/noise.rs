@@ -158,4 +158,26 @@ mod tests {
 
         assert_eq!(-93.97722915699808, noise_power_dbm);
     }
+
+    #[test]
+    fn noise_factor_one_gives_zero_temperature() {
+        let noise_temperature: f64 = super::noise_temperature_from_noise_factor(1.0);
+        assert_eq!(0.0, noise_temperature);
+    }
+
+    #[test]
+    fn roundtrip_noise_figure_temperature_noise_figure() {
+        let original_nf: f64 = 3.0;
+        let temperature: f64 = super::noise_temperature_from_noise_figure(original_nf);
+        let result_nf: f64 = super::noise_figure_from_noise_temperature(temperature);
+        assert!((original_nf - result_nf).abs() < 1e-10);
+    }
+
+    #[test]
+    fn noise_power_from_bandwidth_known_ktb() {
+        // kTB at 290K, 1 Hz bandwidth
+        let noise_power: f64 = super::noise_power_from_bandwidth(290.0, 1.0);
+        let expected: f64 = 1.38e-23 * 290.0;
+        assert_eq!(expected, noise_power);
+    }
 }

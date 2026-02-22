@@ -14,6 +14,38 @@ pub fn linear_to_db(value: f64) -> f64 {
     10.0 * f64::log10(value)
 }
 
+pub fn dbm_to_milliwatts(dbm: f64) -> f64 {
+    10.0_f64.powf(dbm / 10.0)
+}
+
+pub fn milliwatts_to_dbm(mw: f64) -> f64 {
+    10.0 * mw.log10()
+}
+
+pub fn watts_to_dbw(watts: f64) -> f64 {
+    10.0 * watts.log10()
+}
+
+pub fn dbw_to_watts(dbw: f64) -> f64 {
+    10.0_f64.powf(dbw / 10.0)
+}
+
+pub fn dbm_to_dbw(dbm: f64) -> f64 {
+    dbm - 30.0
+}
+
+pub fn dbw_to_dbm(dbw: f64) -> f64 {
+    dbw + 30.0
+}
+
+pub fn milliwatts_to_dbw(mw: f64) -> f64 {
+    10.0 * (mw / 1000.0).log10()
+}
+
+pub fn dbw_to_milliwatts(dbw: f64) -> f64 {
+    10.0_f64.powf(dbw / 10.0) * 1000.0
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -110,5 +142,122 @@ mod tests {
         // -3.0 dB isn't exactly half
         // therefore -13 dB isn't exactly 1/20
         assert_eq!(-13.0, db);
+    }
+
+    #[test]
+    fn dbm_to_milliwatts_zero_dbm() {
+        let mw: f64 = super::dbm_to_milliwatts(0.0);
+        assert_eq!(1.0, mw);
+    }
+
+    #[test]
+    fn milliwatts_to_dbm_one_mw() {
+        let dbm: f64 = super::milliwatts_to_dbm(1.0);
+        assert_eq!(0.0, dbm);
+    }
+
+    #[test]
+    fn watts_to_dbm_zero_watts() {
+        let dbm: f64 = super::watts_to_dbm(0.0);
+        assert!(dbm.is_infinite() && dbm < 0.0);
+    }
+
+    #[test]
+    fn roundtrip_dbm_watts_dbm() {
+        let original_dbm: f64 = 23.0;
+        let watts: f64 = super::dbm_to_watts(original_dbm);
+        let result_dbm: f64 = super::watts_to_dbm(watts);
+        assert!((original_dbm - result_dbm).abs() < 1e-10);
+    }
+
+    #[test]
+    fn roundtrip_linear_db_linear() {
+        let original_linear: f64 = 50.0;
+        let db: f64 = super::linear_to_db(original_linear);
+        let result_linear: f64 = super::db_to_linear(db);
+        assert!((original_linear - result_linear).abs() < 1e-10);
+    }
+
+    #[test]
+    fn negative_db_values() {
+        let db: f64 = -3.010299956639812;
+        let linear: f64 = super::db_to_linear(db);
+        assert!((0.5 - linear).abs() < 1e-10);
+    }
+
+    #[test]
+    fn watts_to_dbw_one_watt() {
+        assert_eq!(0.0, super::watts_to_dbw(1.0));
+    }
+
+    #[test]
+    fn watts_to_dbw_hundred_watts() {
+        assert_eq!(20.0, super::watts_to_dbw(100.0));
+    }
+
+    #[test]
+    fn dbw_to_watts_zero_dbw() {
+        assert_eq!(1.0, super::dbw_to_watts(0.0));
+    }
+
+    #[test]
+    fn dbw_to_watts_ten_dbw() {
+        assert_eq!(10.0, super::dbw_to_watts(10.0));
+    }
+
+    #[test]
+    fn dbm_to_dbw_30dbm() {
+        assert_eq!(0.0, super::dbm_to_dbw(30.0));
+    }
+
+    #[test]
+    fn dbw_to_dbm_zero_dbw() {
+        assert_eq!(30.0, super::dbw_to_dbm(0.0));
+    }
+
+    #[test]
+    fn roundtrip_dbw_watts_dbw() {
+        let original: f64 = 13.0;
+        let watts: f64 = super::dbw_to_watts(original);
+        let result: f64 = super::watts_to_dbw(watts);
+        assert!((original - result).abs() < 1e-10);
+    }
+
+    #[test]
+    fn milliwatts_to_dbw_1000mw() {
+        assert_eq!(0.0, super::milliwatts_to_dbw(1000.0));
+    }
+
+    #[test]
+    fn milliwatts_to_dbw_1mw() {
+        let result = (super::milliwatts_to_dbw(1.0) * 1e5).round() / 1e5;
+        assert_eq!(-30.0, result);
+    }
+
+    #[test]
+    fn dbw_to_milliwatts_zero_dbw() {
+        assert_eq!(1000.0, super::dbw_to_milliwatts(0.0));
+    }
+
+    #[test]
+    fn dbw_to_milliwatts_neg30_dbw() {
+        let result = (super::dbw_to_milliwatts(-30.0) * 1e5).round() / 1e5;
+        assert_eq!(1.0, result);
+    }
+
+    #[test]
+    fn roundtrip_mw_dbw_mw() {
+        let original: f64 = 500.0;
+        let dbw: f64 = super::milliwatts_to_dbw(original);
+        let result: f64 = super::dbw_to_milliwatts(dbw);
+        assert!((original - result).abs() < 1e-10);
+    }
+
+    #[test]
+    fn roundtrip_dbm_dbw_dbm() {
+        let original: f64 = 23.0;
+        let dbw: f64 = super::dbm_to_dbw(original);
+        let result: f64 = super::dbw_to_dbm(dbw);
+        assert_eq!(original, result);
     }
 }
