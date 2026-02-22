@@ -1,5 +1,5 @@
 [package]
-authors = ["Ian Cleary <rust@iancleary.me>"]
+authors = ["Ian Cleary <iancleary@hey.com>"]
 description = "Common Radio Frequency conversion equations for RF Modeling"
 documentation = "https://docs.rs/rfconversions"
 edition = "2021"
