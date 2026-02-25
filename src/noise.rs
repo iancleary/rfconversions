@@ -1,29 +1,95 @@
+/// Convert noise factor (linear) to noise temperature (Kelvin).
+///
+/// Uses T₀ = 290 K reference temperature.
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::noise_temperature_from_noise_factor;
+/// assert_eq!(noise_temperature_from_noise_factor(2.0), 290.0);
+/// ```
 pub fn noise_temperature_from_noise_factor(noise_factor: f64) -> f64 {
     290.0 * (noise_factor - 1.0)
 }
 
+/// Convert noise figure (dB) to noise temperature (Kelvin).
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::noise_temperature_from_noise_figure;
+/// let temp = noise_temperature_from_noise_figure(3.0);
+/// assert!((temp - 288.626).abs() < 0.001);
+/// ```
 pub fn noise_temperature_from_noise_figure(noise_figure: f64) -> f64 {
     let noise_factor: f64 = noise_factor_from_noise_figure(noise_figure);
     noise_temperature_from_noise_factor(noise_factor)
 }
 
+/// Convert noise figure (dB) to noise factor (linear).
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::noise_factor_from_noise_figure;
+/// assert_eq!(noise_factor_from_noise_figure(3.010299956639812), 2.0);
+/// ```
 pub fn noise_factor_from_noise_figure(noise_figure: f64) -> f64 {
     10.0_f64.powf(noise_figure / 10.0)
 }
 
+/// Convert noise temperature (Kelvin) to noise factor (linear).
+///
+/// Uses T₀ = 290 K reference temperature.
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::noise_factor_from_noise_temperature;
+/// assert_eq!(noise_factor_from_noise_temperature(290.0), 2.0);
+/// ```
 pub fn noise_factor_from_noise_temperature(noise_temperature: f64) -> f64 {
     1.0 + (noise_temperature / 290.0)
 }
 
+/// Convert noise temperature (Kelvin) to noise figure (dB).
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::noise_figure_from_noise_temperature;
+/// let nf = noise_figure_from_noise_temperature(290.0);
+/// assert!((nf - 3.0103).abs() < 0.001);
+/// ```
 pub fn noise_figure_from_noise_temperature(noise_temperature: f64) -> f64 {
     let noise_factor: f64 = noise_factor_from_noise_temperature(noise_temperature);
     noise_figure_from_noise_factor(noise_factor)
 }
 
+/// Convert noise factor (linear) to noise figure (dB).
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::noise_figure_from_noise_factor;
+/// let nf = noise_figure_from_noise_factor(2.0);
+/// assert!((nf - 3.0103).abs() < 0.001);
+/// ```
 pub fn noise_figure_from_noise_factor(noise_factor: f64) -> f64 {
     10.0_f64 * noise_factor.log10()
 }
 
+/// Calculate thermal noise power (watts) from temperature and bandwidth.
+///
+/// Uses Boltzmann's constant k = 1.38 × 10⁻²³ J/K.
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::noise_power_from_bandwidth;
+/// let power = noise_power_from_bandwidth(290.0, 1.0);
+/// assert!((power - 4.002e-21).abs() < 1e-24);
+/// ```
 pub fn noise_power_from_bandwidth(temperature: f64, bandwidth: f64) -> f64 {
     1.38e-23 * temperature * bandwidth
 }
