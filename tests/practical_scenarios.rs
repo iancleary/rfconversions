@@ -176,6 +176,54 @@ fn p1db_input_output_roundtrip_negative_gain() {
     assert!((back - ip1db).abs() < 1e-10);
 }
 
+// ── Friis cascade practical scenarios ────────────────────────────
+
+#[test]
+fn satellite_ground_terminal_receive_chain() {
+    // Typical Ka-band ground terminal RX chain:
+    // LNA (NF=0.5dB, G=25dB) → Waveguide (NF=0.3dB, G=-0.3dB) → Downconverter (NF=8dB, G=10dB)
+    use rfconversions::noise::{cascade_noise_figure, cascade_noise_temperature, noise_temperature_from_noise_figure};
+
+    let stages_db = vec![(0.5, 25.0), (0.3, -0.3), (8.0, 10.0)];
+    let nf_total = cascade_noise_figure(&stages_db);
+
+    // LNA dominates; total should be barely above 0.5 dB
+    assert!(nf_total < 0.6, "Ka-band RX NF too high: {nf_total} dB");
+    assert!(nf_total > 0.5, "Cascade NF can't be less than first stage");
+
+    // Verify system noise temperature is reasonable for Ka-band
+    let tsys = noise_temperature_from_noise_figure(nf_total);
+    assert!(tsys < 45.0, "System noise temp too high: {tsys} K");
+}
+
+#[test]
+fn friis_order_matters_dramatically() {
+    // Demonstrate why LNA goes first: same components, different order
+    use rfconversions::noise::cascade_noise_figure;
+
+    let lna = (0.5, 20.0);  // NF=0.5dB, G=20dB
+    let mixer = (8.0, -7.0); // NF=8dB, G=-7dB
+
+    let good = cascade_noise_figure(&[lna, mixer]);
+    let bad = cascade_noise_figure(&[mixer, lna]);
+
+    // LNA first: ~0.58 dB, Mixer first: ~8.6 dB
+    assert!(bad - good > 7.0, "Order should matter by >7 dB, got {:.1} dB difference", bad - good);
+}
+
+#[test]
+fn passive_device_noise_contribution() {
+    // Cable loss = 3 dB → NF = 3 dB at room temp, G = -3 dB
+    // After 20 dB LNA, cable contribution is negligible
+    use rfconversions::noise::cascade_noise_figure;
+
+    let with_cable = cascade_noise_figure(&[(1.0, 20.0), (3.0, -3.0)]);
+    let without = 1.0_f64; // Just the LNA
+
+    // 3 dB cable after 20 dB gain: adds ~0.03 dB
+    assert!((with_cable - without).abs() < 0.05);
+}
+
 // ── Cross-module practical calculations ─────────────────────────
 
 #[test]

@@ -94,6 +94,115 @@ pub fn noise_power_from_bandwidth(temperature: f64, bandwidth: f64) -> f64 {
     1.38e-23 * temperature * bandwidth
 }
 
+/// Cascade noise factor using the Friis formula.
+///
+/// Computes the total noise factor of a chain of stages using:
+///
+/// F_total = F₁ + (F₂ - 1)/G₁ + (F₃ - 1)/(G₁·G₂) + ...
+///
+/// Each stage is represented as `(noise_factor, gain)` where both values
+/// are in **linear** (not dB) units.
+///
+/// # Arguments
+///
+/// * `stages` - Slice of `(noise_factor, gain)` tuples in linear units.
+///
+/// # Panics
+///
+/// Panics if `stages` is empty.
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::cascade_noise_factor;
+///
+/// // LNA (NF=0.5dB, G=20dB) → Cable (NF=1dB, G=-1dB) → Mixer (NF=8dB, G=-7dB)
+/// let stages = vec![
+///     (1.1220, 100.0),   // LNA: F=1.122, G=100
+///     (1.2589, 0.7943),  // Cable: F=1.259, G=0.794
+///     (6.3096, 0.1995),  // Mixer: F=6.310, G=0.200
+/// ];
+/// let f_total = cascade_noise_factor(&stages);
+/// // LNA dominates — total NF barely above LNA's
+/// assert!((f_total - 1.1914).abs() < 0.001);
+/// ```
+pub fn cascade_noise_factor(stages: &[(f64, f64)]) -> f64 {
+    assert!(!stages.is_empty(), "stages must not be empty");
+
+    let mut f_total = stages[0].0;
+    let mut cumulative_gain = stages[0].1;
+
+    for &(noise_factor, gain) in &stages[1..] {
+        f_total += (noise_factor - 1.0) / cumulative_gain;
+        cumulative_gain *= gain;
+    }
+
+    f_total
+}
+
+/// Cascade noise figure (dB) using the Friis formula.
+///
+/// Convenience wrapper around [`cascade_noise_factor`] that accepts
+/// and returns values in dB.
+///
+/// Each stage is `(noise_figure_db, gain_db)`.
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::cascade_noise_figure;
+///
+/// // LNA (NF=0.5dB, G=20dB) → Cable (NF=1dB, G=-1dB) → Mixer (NF=8dB, G=-7dB)
+/// let stages = vec![(0.5, 20.0), (1.0, -1.0), (8.0, -7.0)];
+/// let nf_total = cascade_noise_figure(&stages);
+/// assert!((nf_total - 0.754).abs() < 0.01);
+/// ```
+pub fn cascade_noise_figure(stages: &[(f64, f64)]) -> f64 {
+    let linear_stages: Vec<(f64, f64)> = stages
+        .iter()
+        .map(|&(nf_db, gain_db)| {
+            (
+                noise_factor_from_noise_figure(nf_db),
+                crate::power::db_to_linear(gain_db),
+            )
+        })
+        .collect();
+
+    noise_figure_from_noise_factor(cascade_noise_factor(&linear_stages))
+}
+
+/// Cascade noise temperature using the Friis formula.
+///
+/// Computes the total equivalent noise temperature of a chain of stages:
+///
+/// T_total = T₁ + T₂/G₁ + T₃/(G₁·G₂) + ...
+///
+/// Each stage is `(noise_temperature_kelvin, gain_linear)`.
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::cascade_noise_temperature;
+///
+/// // LNA (Te=35K, G=100) → Cable (Te=75K, G=0.794)
+/// let stages = vec![(35.0, 100.0), (75.0, 0.794)];
+/// let t_total = cascade_noise_temperature(&stages);
+/// assert!((t_total - 35.75).abs() < 0.01);
+/// ```
+pub fn cascade_noise_temperature(stages: &[(f64, f64)]) -> f64 {
+    assert!(!stages.is_empty(), "stages must not be empty");
+
+    let mut t_total = stages[0].0;
+    let mut cumulative_gain = stages[0].1;
+
+    for &(temp, gain) in &stages[1..] {
+        t_total += temp / cumulative_gain;
+        cumulative_gain *= gain;
+    }
+
+    t_total
+}
+
 // Noise Figure of Passive Device
 // https://www.microwaves101.com/encyclopedias/noise-temperature
 // "Linear passive devices have noise figure equal to their loss. Expressed in dB, the NF is equal to -S21(dB). Something with one dB loss has one dB noise figure.
@@ -237,6 +346,85 @@ mod tests {
         let temperature: f64 = super::noise_temperature_from_noise_figure(original_nf);
         let result_nf: f64 = super::noise_figure_from_noise_temperature(temperature);
         assert!((original_nf - result_nf).abs() < 1e-10);
+    }
+
+    // ── Friis cascade tests ──────────────────────────────────────
+
+    #[test]
+    fn cascade_noise_factor_single_stage() {
+        let f = super::cascade_noise_factor(&[(2.0, 10.0)]);
+        assert_eq!(f, 2.0);
+    }
+
+    #[test]
+    fn cascade_noise_factor_two_stage_lna_dominant() {
+        // LNA: F=1.12 (0.5dB), G=100 (20dB)
+        // Mixer: F=6.31 (8dB), G=0.2 (-7dB)
+        // F_total = 1.12 + (6.31 - 1)/100 = 1.12 + 0.0531 = 1.1731
+        let f = super::cascade_noise_factor(&[(1.12, 100.0), (6.31, 0.2)]);
+        assert!((f - 1.1731).abs() < 0.001);
+    }
+
+    #[test]
+    fn cascade_noise_factor_bad_order() {
+        // Mixer first, then LNA — much worse
+        let good = super::cascade_noise_factor(&[(1.12, 100.0), (6.31, 0.2)]);
+        let bad = super::cascade_noise_factor(&[(6.31, 0.2), (1.12, 100.0)]);
+        assert!(bad > good, "Putting mixer first should give worse NF");
+        // bad = 6.31 + (1.12-1)/0.2 = 6.31 + 0.6 = 6.91
+        assert!((bad - 6.91).abs() < 0.01);
+    }
+
+    #[test]
+    #[should_panic(expected = "stages must not be empty")]
+    fn cascade_noise_factor_empty_panics() {
+        super::cascade_noise_factor(&[]);
+    }
+
+    #[test]
+    fn cascade_noise_figure_three_stage_rx() {
+        // LNA (0.5dB, 20dB) → Cable (1dB, -1dB) → Mixer (8dB, -7dB)
+        let nf = super::cascade_noise_figure(&[(0.5, 20.0), (1.0, -1.0), (8.0, -7.0)]);
+        // Should be barely above LNA NF since LNA gain dominates
+        assert!(nf < 1.0, "Cascade NF should be < 1 dB, got {nf}");
+        assert!(nf > 0.5, "Cascade NF should be > LNA NF, got {nf}");
+    }
+
+    #[test]
+    fn cascade_noise_temperature_two_stage() {
+        // LNA: Te=35K, G=100 → Cable: Te=75K, G=0.794
+        let t = super::cascade_noise_temperature(&[(35.0, 100.0), (75.0, 0.794)]);
+        // T_total = 35 + 75/100 = 35.75
+        assert!((t - 35.75).abs() < 0.01);
+    }
+
+    #[test]
+    fn cascade_noise_temperature_matches_factor() {
+        // Verify consistency: cascade via temperature should match cascade via factor
+        let nf1 = 0.5_f64;
+        let g1 = 20.0_f64;
+        let nf2 = 8.0_f64;
+        let g2 = -7.0_f64;
+
+        let nf_cascade = super::cascade_noise_figure(&[(nf1, g1), (nf2, g2)]);
+
+        let t1 = super::noise_temperature_from_noise_figure(nf1);
+        let t2 = super::noise_temperature_from_noise_figure(nf2);
+        let g1_lin = crate::power::db_to_linear(g1);
+        let g2_lin = crate::power::db_to_linear(g2);
+        let t_cascade = super::cascade_noise_temperature(&[(t1, g1_lin), (t2, g2_lin)]);
+        let nf_from_temp = super::noise_figure_from_noise_temperature(t_cascade);
+
+        assert!(
+            (nf_cascade - nf_from_temp).abs() < 1e-10,
+            "NF methods disagree: {nf_cascade} vs {nf_from_temp}"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "stages must not be empty")]
+    fn cascade_noise_temperature_empty_panics() {
+        super::cascade_noise_temperature(&[]);
     }
 
     #[test]
