@@ -8,6 +8,9 @@
 /// use rfconversions::noise::noise_temperature_from_noise_factor;
 /// assert_eq!(noise_temperature_from_noise_factor(2.0), 290.0);
 /// ```
+#[doc(alias = "F")]
+#[doc(alias = "Te")]
+#[must_use]
 pub fn noise_temperature_from_noise_factor(noise_factor: f64) -> f64 {
     290.0 * (noise_factor - 1.0)
 }
@@ -21,6 +24,9 @@ pub fn noise_temperature_from_noise_factor(noise_factor: f64) -> f64 {
 /// let temp = noise_temperature_from_noise_figure(3.0);
 /// assert!((temp - 288.626).abs() < 0.001);
 /// ```
+#[doc(alias = "NF")]
+#[doc(alias = "Te")]
+#[must_use]
 pub fn noise_temperature_from_noise_figure(noise_figure: f64) -> f64 {
     let noise_factor: f64 = noise_factor_from_noise_figure(noise_figure);
     noise_temperature_from_noise_factor(noise_factor)
@@ -34,6 +40,9 @@ pub fn noise_temperature_from_noise_figure(noise_figure: f64) -> f64 {
 /// use rfconversions::noise::noise_factor_from_noise_figure;
 /// assert_eq!(noise_factor_from_noise_figure(3.010299956639812), 2.0);
 /// ```
+#[doc(alias = "NF")]
+#[doc(alias = "F")]
+#[must_use]
 pub fn noise_factor_from_noise_figure(noise_figure: f64) -> f64 {
     10.0_f64.powf(noise_figure / 10.0)
 }
@@ -48,6 +57,9 @@ pub fn noise_factor_from_noise_figure(noise_figure: f64) -> f64 {
 /// use rfconversions::noise::noise_factor_from_noise_temperature;
 /// assert_eq!(noise_factor_from_noise_temperature(290.0), 2.0);
 /// ```
+#[doc(alias = "Te")]
+#[doc(alias = "F")]
+#[must_use]
 pub fn noise_factor_from_noise_temperature(noise_temperature: f64) -> f64 {
     1.0 + (noise_temperature / 290.0)
 }
@@ -61,6 +73,9 @@ pub fn noise_factor_from_noise_temperature(noise_temperature: f64) -> f64 {
 /// let nf = noise_figure_from_noise_temperature(290.0);
 /// assert!((nf - 3.0103).abs() < 0.001);
 /// ```
+#[doc(alias = "Te")]
+#[doc(alias = "NF")]
+#[must_use]
 pub fn noise_figure_from_noise_temperature(noise_temperature: f64) -> f64 {
     let noise_factor: f64 = noise_factor_from_noise_temperature(noise_temperature);
     noise_figure_from_noise_factor(noise_factor)
@@ -75,6 +90,9 @@ pub fn noise_figure_from_noise_temperature(noise_temperature: f64) -> f64 {
 /// let nf = noise_figure_from_noise_factor(2.0);
 /// assert!((nf - 3.0103).abs() < 0.001);
 /// ```
+#[doc(alias = "NF")]
+#[doc(alias = "F")]
+#[must_use]
 pub fn noise_figure_from_noise_factor(noise_factor: f64) -> f64 {
     10.0_f64 * noise_factor.log10()
 }
@@ -90,6 +108,9 @@ pub fn noise_figure_from_noise_factor(noise_factor: f64) -> f64 {
 /// let power = noise_power_from_bandwidth(290.0, 1.0);
 /// assert!((power - 4.002e-21).abs() < 1e-24);
 /// ```
+#[doc(alias = "kTB")]
+#[doc(alias = "thermal noise")]
+#[must_use]
 pub fn noise_power_from_bandwidth(temperature: f64, bandwidth: f64) -> f64 {
     1.38e-23 * temperature * bandwidth
 }
@@ -126,6 +147,9 @@ pub fn noise_power_from_bandwidth(temperature: f64, bandwidth: f64) -> f64 {
 /// // LNA dominates — total NF barely above LNA's
 /// assert!((f_total - 1.1914).abs() < 0.001);
 /// ```
+#[doc(alias = "Friis")]
+#[doc(alias = "F")]
+#[must_use]
 pub fn cascade_noise_factor(stages: &[(f64, f64)]) -> f64 {
     assert!(!stages.is_empty(), "stages must not be empty");
 
@@ -157,6 +181,9 @@ pub fn cascade_noise_factor(stages: &[(f64, f64)]) -> f64 {
 /// let nf_total = cascade_noise_figure(&stages);
 /// assert!((nf_total - 0.754).abs() < 0.01);
 /// ```
+#[doc(alias = "Friis")]
+#[doc(alias = "NF")]
+#[must_use]
 pub fn cascade_noise_figure(stages: &[(f64, f64)]) -> f64 {
     let linear_stages: Vec<(f64, f64)> = stages
         .iter()
@@ -189,6 +216,9 @@ pub fn cascade_noise_figure(stages: &[(f64, f64)]) -> f64 {
 /// let t_total = cascade_noise_temperature(&stages);
 /// assert!((t_total - 35.75).abs() < 0.01);
 /// ```
+#[doc(alias = "Friis")]
+#[doc(alias = "Te")]
+#[must_use]
 pub fn cascade_noise_temperature(stages: &[(f64, f64)]) -> f64 {
     assert!(!stages.is_empty(), "stages must not be empty");
 
