@@ -44,10 +44,7 @@ fn dbm_dbw_roundtrip_across_range() {
         let dbm = dbm_val as f64;
         let dbw = dbm_to_dbw(dbm);
         let back = dbw_to_dbm(dbw);
-        assert!(
-            (back - dbm).abs() < 1e-10,
-            "Roundtrip failed at {dbm} dBm"
-        );
+        assert!((back - dbm).abs() < 1e-10, "Roundtrip failed at {dbm} dBm");
     }
 }
 
@@ -182,7 +179,9 @@ fn p1db_input_output_roundtrip_negative_gain() {
 fn satellite_ground_terminal_receive_chain() {
     // Typical Ka-band ground terminal RX chain:
     // LNA (NF=0.5dB, G=25dB) → Waveguide (NF=0.3dB, G=-0.3dB) → Downconverter (NF=8dB, G=10dB)
-    use rfconversions::noise::{cascade_noise_figure, cascade_noise_temperature, noise_temperature_from_noise_figure};
+    use rfconversions::noise::{
+        cascade_noise_figure, cascade_noise_temperature, noise_temperature_from_noise_figure,
+    };
 
     let stages_db = vec![(0.5, 25.0), (0.3, -0.3), (8.0, 10.0)];
     let nf_total = cascade_noise_figure(&stages_db);
@@ -201,14 +200,18 @@ fn friis_order_matters_dramatically() {
     // Demonstrate why LNA goes first: same components, different order
     use rfconversions::noise::cascade_noise_figure;
 
-    let lna = (0.5, 20.0);  // NF=0.5dB, G=20dB
+    let lna = (0.5, 20.0); // NF=0.5dB, G=20dB
     let mixer = (8.0, -7.0); // NF=8dB, G=-7dB
 
     let good = cascade_noise_figure(&[lna, mixer]);
     let bad = cascade_noise_figure(&[mixer, lna]);
 
     // LNA first: ~0.58 dB, Mixer first: ~8.6 dB
-    assert!(bad - good > 7.0, "Order should matter by >7 dB, got {:.1} dB difference", bad - good);
+    assert!(
+        bad - good > 7.0,
+        "Order should matter by >7 dB, got {:.1} dB difference",
+        bad - good
+    );
 }
 
 #[test]

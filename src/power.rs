@@ -6,6 +6,8 @@
 /// use rfconversions::power::watts_to_dbm;
 /// assert_eq!(watts_to_dbm(1.0), 30.0);
 /// ```
+#[doc(alias = "dBm")]
+#[must_use]
 pub fn watts_to_dbm(watts: f64) -> f64 {
     10.0 * (watts.log10() + 3.0)
 }
@@ -18,6 +20,8 @@ pub fn watts_to_dbm(watts: f64) -> f64 {
 /// use rfconversions::power::dbm_to_watts;
 /// assert_eq!(dbm_to_watts(30.0), 1.0);
 /// ```
+#[doc(alias = "dBm")]
+#[must_use]
 pub fn dbm_to_watts(dbm: f64) -> f64 {
     10.0_f64.powf((dbm - 30.0) / 10.0)
 }
@@ -30,6 +34,9 @@ pub fn dbm_to_watts(dbm: f64) -> f64 {
 /// use rfconversions::power::db_to_linear;
 /// assert_eq!(db_to_linear(30.0), 1000.0);
 /// ```
+#[doc(alias = "dB")]
+#[doc(alias = "decibel")]
+#[must_use]
 pub fn db_to_linear(value: f64) -> f64 {
     10.0_f64.powf(value / 10.0)
 }
@@ -42,6 +49,9 @@ pub fn db_to_linear(value: f64) -> f64 {
 /// use rfconversions::power::linear_to_db;
 /// assert_eq!(linear_to_db(1000.0), 30.0);
 /// ```
+#[doc(alias = "dB")]
+#[doc(alias = "decibel")]
+#[must_use]
 pub fn linear_to_db(value: f64) -> f64 {
     10.0 * f64::log10(value)
 }
@@ -54,6 +64,9 @@ pub fn linear_to_db(value: f64) -> f64 {
 /// use rfconversions::power::dbm_to_milliwatts;
 /// assert_eq!(dbm_to_milliwatts(0.0), 1.0);
 /// ```
+#[doc(alias = "dBm")]
+#[doc(alias = "mW")]
+#[must_use]
 pub fn dbm_to_milliwatts(dbm: f64) -> f64 {
     10.0_f64.powf(dbm / 10.0)
 }
@@ -66,6 +79,9 @@ pub fn dbm_to_milliwatts(dbm: f64) -> f64 {
 /// use rfconversions::power::milliwatts_to_dbm;
 /// assert_eq!(milliwatts_to_dbm(1.0), 0.0);
 /// ```
+#[doc(alias = "dBm")]
+#[doc(alias = "mW")]
+#[must_use]
 pub fn milliwatts_to_dbm(mw: f64) -> f64 {
     10.0 * mw.log10()
 }
@@ -79,6 +95,8 @@ pub fn milliwatts_to_dbm(mw: f64) -> f64 {
 /// assert_eq!(watts_to_dbw(1.0), 0.0);
 /// assert_eq!(watts_to_dbw(100.0), 20.0);
 /// ```
+#[doc(alias = "dBW")]
+#[must_use]
 pub fn watts_to_dbw(watts: f64) -> f64 {
     10.0 * watts.log10()
 }
@@ -91,6 +109,8 @@ pub fn watts_to_dbw(watts: f64) -> f64 {
 /// use rfconversions::power::dbw_to_watts;
 /// assert_eq!(dbw_to_watts(0.0), 1.0);
 /// ```
+#[doc(alias = "dBW")]
+#[must_use]
 pub fn dbw_to_watts(dbw: f64) -> f64 {
     10.0_f64.powf(dbw / 10.0)
 }
@@ -103,6 +123,9 @@ pub fn dbw_to_watts(dbw: f64) -> f64 {
 /// use rfconversions::power::dbm_to_dbw;
 /// assert_eq!(dbm_to_dbw(30.0), 0.0);
 /// ```
+#[doc(alias = "dBm")]
+#[doc(alias = "dBW")]
+#[must_use]
 pub fn dbm_to_dbw(dbm: f64) -> f64 {
     dbm - 30.0
 }
@@ -115,6 +138,9 @@ pub fn dbm_to_dbw(dbm: f64) -> f64 {
 /// use rfconversions::power::dbw_to_dbm;
 /// assert_eq!(dbw_to_dbm(0.0), 30.0);
 /// ```
+#[doc(alias = "dBm")]
+#[doc(alias = "dBW")]
+#[must_use]
 pub fn dbw_to_dbm(dbw: f64) -> f64 {
     dbw + 30.0
 }
@@ -127,6 +153,9 @@ pub fn dbw_to_dbm(dbw: f64) -> f64 {
 /// use rfconversions::power::milliwatts_to_dbw;
 /// assert_eq!(milliwatts_to_dbw(1000.0), 0.0);
 /// ```
+#[doc(alias = "mW")]
+#[doc(alias = "dBW")]
+#[must_use]
 pub fn milliwatts_to_dbw(mw: f64) -> f64 {
     10.0 * (mw / 1000.0).log10()
 }
@@ -139,6 +168,9 @@ pub fn milliwatts_to_dbw(mw: f64) -> f64 {
 /// use rfconversions::power::dbw_to_milliwatts;
 /// assert_eq!(dbw_to_milliwatts(0.0), 1000.0);
 /// ```
+#[doc(alias = "mW")]
+#[doc(alias = "dBW")]
+#[must_use]
 pub fn dbw_to_milliwatts(dbw: f64) -> f64 {
     10.0_f64.powf(dbw / 10.0) * 1000.0
 }
