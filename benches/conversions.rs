@@ -64,25 +64,21 @@ fn bench_p1db(c: &mut Criterion) {
         b.iter(|| p1db::input_to_output_db(black_box(-10.0), black_box(20.0)))
     });
     group.bench_function("cascade_output_p1db", |b| {
-        b.iter(|| {
-            p1db::cascade_output_p1db(
-                black_box(34.0),
-                black_box(20.0),
-                black_box(30.0),
-            )
-        })
+        b.iter(|| p1db::cascade_output_p1db(black_box(34.0), black_box(20.0), black_box(30.0)))
     });
     group.bench_function("cascade_output_p1db_linear", |b| {
         b.iter(|| {
-            p1db::cascade_output_p1db_linear(
-                black_box(100.0),
-                black_box(50.0),
-                black_box(2.0),
-            )
+            p1db::cascade_output_p1db_linear(black_box(100.0), black_box(50.0), black_box(2.0))
         })
     });
     group.finish();
 }
 
-criterion_group!(benches, bench_power, bench_frequency, bench_noise, bench_p1db);
+criterion_group!(
+    benches,
+    bench_power,
+    bench_frequency,
+    bench_noise,
+    bench_p1db
+);
 criterion_main!(benches);
