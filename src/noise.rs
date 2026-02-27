@@ -12,7 +12,7 @@
 #[doc(alias = "Te")]
 #[must_use]
 pub fn noise_temperature_from_noise_factor(noise_factor: f64) -> f64 {
-    290.0 * (noise_factor - 1.0)
+    crate::constants::T0 * (noise_factor - 1.0)
 }
 
 /// Convert noise figure (dB) to noise temperature (Kelvin).
@@ -61,7 +61,7 @@ pub fn noise_factor_from_noise_figure(noise_figure: f64) -> f64 {
 #[doc(alias = "F")]
 #[must_use]
 pub fn noise_factor_from_noise_temperature(noise_temperature: f64) -> f64 {
-    1.0 + (noise_temperature / 290.0)
+    1.0 + (noise_temperature / crate::constants::T0)
 }
 
 /// Convert noise temperature (Kelvin) to noise figure (dB).
@@ -106,13 +106,13 @@ pub fn noise_figure_from_noise_factor(noise_factor: f64) -> f64 {
 /// ```
 /// use rfconversions::noise::noise_power_from_bandwidth;
 /// let power = noise_power_from_bandwidth(290.0, 1.0);
-/// assert!((power - 4.002e-21).abs() < 1e-24);
+/// assert!((power - 4.004e-21).abs() < 1e-24);
 /// ```
 #[doc(alias = "kTB")]
 #[doc(alias = "thermal noise")]
 #[must_use]
 pub fn noise_power_from_bandwidth(temperature: f64, bandwidth: f64) -> f64 {
-    1.38e-23 * temperature * bandwidth
+    crate::constants::BOLTZMANN * temperature * bandwidth
 }
 
 /// Cascade noise factor using the Friis formula.
@@ -231,6 +231,51 @@ pub fn cascade_noise_temperature(stages: &[(f64, f64)]) -> f64 {
     }
 
     t_total
+}
+
+/// Calculate system figure of merit G/T in dB/K.
+///
+/// G/T is the ratio of antenna gain (dBi) to system noise temperature (K),
+/// a key metric for receive system sensitivity.
+///
+/// # Arguments
+///
+/// * `antenna_gain_dbi` - Antenna gain in dBi
+/// * `system_noise_temperature` - System noise temperature in kelvin
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::g_over_t;
+/// // 40 dBi antenna, 200 K system noise temperature
+/// let got = g_over_t(40.0, 200.0);
+/// assert!((got - 16.99).abs() < 0.01);
+/// ```
+#[doc(alias = "G/T")]
+#[doc(alias = "figure of merit")]
+#[must_use]
+pub fn g_over_t(antenna_gain_dbi: f64, system_noise_temperature: f64) -> f64 {
+    antenna_gain_dbi - 10.0 * system_noise_temperature.log10()
+}
+
+/// Calculate noise power spectral density N₀ in dBm/Hz.
+///
+/// N₀ = 10·log₁₀(k·T) + 30, where the +30 converts from dBW to dBm.
+///
+/// At 290 K, this gives the well-known -174 dBm/Hz thermal noise floor.
+///
+/// # Examples
+///
+/// ```
+/// use rfconversions::noise::noise_density_dbm_per_hz;
+/// let n0 = noise_density_dbm_per_hz(290.0);
+/// assert!((n0 - (-174.0)).abs() < 0.1);
+/// ```
+#[doc(alias = "N0")]
+#[doc(alias = "noise density")]
+#[must_use]
+pub fn noise_density_dbm_per_hz(temperature: f64) -> f64 {
+    10.0 * (crate::constants::BOLTZMANN * temperature).log10() + 30.0
 }
 
 // Noise Figure of Passive Device
@@ -361,7 +406,8 @@ mod tests {
 
         let noise_power_dbm: f64 = 10.0 * (noise_power.log10() + 3.0);
 
-        assert_eq!(-93.97722915699808, noise_power_dbm);
+        // kTB at 290K, 100 MHz: ~-94 dBm
+        assert!((noise_power_dbm - (-93.975)).abs() < 0.01);
     }
 
     #[test]
@@ -461,7 +507,28 @@ mod tests {
     fn noise_power_from_bandwidth_known_ktb() {
         // kTB at 290K, 1 Hz bandwidth
         let noise_power: f64 = super::noise_power_from_bandwidth(290.0, 1.0);
-        let expected: f64 = 1.38e-23 * 290.0;
+        let expected: f64 = crate::constants::BOLTZMANN * 290.0;
         assert_eq!(expected, noise_power);
+    }
+
+    #[test]
+    fn g_over_t_typical_earth_station() {
+        // 40 dBi dish, 200 K system noise
+        let got = super::g_over_t(40.0, 200.0);
+        // G/T = 40 - 10*log10(200) = 40 - 23.01 = 16.99
+        assert!((got - 16.99).abs() < 0.01);
+    }
+
+    #[test]
+    fn noise_density_at_290k() {
+        let n0 = super::noise_density_dbm_per_hz(290.0);
+        // Standard thermal noise floor: -174 dBm/Hz
+        assert!((n0 - (-174.0)).abs() < 0.1);
+    }
+
+    #[test]
+    fn noise_density_at_zero_kelvin_is_neg_infinity() {
+        let n0 = super::noise_density_dbm_per_hz(0.0);
+        assert!(n0.is_infinite() && n0 < 0.0);
     }
 }
