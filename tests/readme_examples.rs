@@ -99,8 +99,8 @@ fn noise_figure_from_noise_temperature() {
 #[test]
 fn noise_power_from_bandwidth() {
     let noise_power = rfconversions::noise::noise_power_from_bandwidth(290.0, 100.0e6);
-    // Verify it's kTB: 1.38e-23 * 290 * 100e6
-    let expected = 1.38e-23 * 290.0 * 100.0e6;
+    // Verify it's kTB using exact Boltzmann constant
+    let expected = rfconversions::constants::BOLTZMANN * 290.0 * 100.0e6;
     assert_eq!(noise_power, expected);
 }
 
