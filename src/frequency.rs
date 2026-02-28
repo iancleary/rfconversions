@@ -395,6 +395,25 @@ mod tests {
     }
 
     #[test]
+    fn frequency_conversions_non_unity_thz() {
+        // Use 2.5 THz to catch mutants that return 1.0
+        let thz = 2.5;
+        let ghz = 2_500.0;
+        let mhz = 2_500_000.0;
+        let khz = 2_500_000_000.0;
+        let hz = 2_500_000_000_000.0;
+
+        assert_eq!(super::mhz_to_thz(mhz), thz);
+        assert_eq!(super::khz_to_thz(khz), thz);
+        assert_eq!(super::hz_to_thz(hz), thz);
+
+        assert_eq!(super::thz_to_ghz(thz), ghz);
+        assert_eq!(super::thz_to_mhz(thz), mhz);
+        assert_eq!(super::thz_to_khz(thz), khz);
+        assert_eq!(super::thz_to_hz(thz), hz);
+    }
+
+    #[test]
     fn wavelength_to_frequency_roundtrip_one_gigahertz() {
         let base: f64 = 10.0;
         let frequency: f64 = 1.0 * base.powf(9.0);
