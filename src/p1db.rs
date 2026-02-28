@@ -137,4 +137,86 @@ mod tests {
 
         assert_eq!(input_p1db, result);
     }
+
+    #[test]
+    fn input_to_output_negative_gain_attenuator() {
+        // Attenuator: gain = -10 dB, input P1dB = 20 dBm
+        // Output P1dB = 20 + (-10 - 1) = 9 dBm
+        let result = crate::p1db::input_to_output_db(20.0, -10.0);
+        assert_eq!(result, 9.0);
+    }
+
+    #[test]
+    fn input_to_output_zero_gain() {
+        // Unity gain device: output P1dB = input P1dB - 1
+        let result = crate::p1db::input_to_output_db(10.0, 0.0);
+        assert_eq!(result, 9.0);
+    }
+
+    #[test]
+    fn output_to_input_negative_gain() {
+        // Attenuator: output P1dB = 9 dBm, gain = -10 dB
+        // Input P1dB = 9 - (-10 - 1) = 9 + 11 = 20
+        let result = crate::p1db::output_to_input_db(9.0, -10.0);
+        assert_eq!(result, 20.0);
+    }
+
+    #[test]
+    fn cascade_three_stage_amplifier_chain() {
+        // Three-stage cascade: apply formula iteratively
+        // Stage 1: OP1dB = 30 dBm, Gain = 20 dB
+        // Stage 2: OP1dB = 25 dBm, Gain = 15 dB
+        // Stage 3: OP1dB = 35 dBm, Gain = 10 dB
+        let stages: Vec<(f64, f64)> = vec![(30.0, 20.0), (25.0, 15.0), (35.0, 10.0)];
+
+        let mut cumulative = stages[0].0; // first stage OP1dB
+        for &(op1db, gain) in &stages[1..] {
+            cumulative = crate::p1db::cascade_output_p1db(cumulative, op1db, gain);
+        }
+
+        // Result should be dominated by the weakest stage referred to output
+        // Just verify it's a reasonable value less than any single stage OP1dB
+        assert!(cumulative < 25.0, "cascade should be limited by weakest stage");
+        assert!(cumulative > 0.0, "cascade should be positive");
+    }
+
+    #[test]
+    fn cascade_identical_stages() {
+        // Two identical stages: OP1dB = 20 dBm, Gain = 10 dB each
+        let result = crate::p1db::cascade_output_p1db(20.0, 20.0, 10.0);
+        // cascade < single stage OP1dB since first stage compresses at output
+        assert!(result < 20.0);
+    }
+
+    #[test]
+    fn cascade_linear_known_value() {
+        // Simple case: both stages OP1dB = 100 mW linear, gain = 1 (0 dB)
+        // 1 / (1/100 * 1 + 1/100) = 1 / 0.02 = 50
+        let result = crate::p1db::cascade_output_p1db_linear(100.0, 100.0, 1.0);
+        assert_eq!(result, 50.0);
+    }
+
+    #[test]
+    fn cascade_high_gain_stage_dominates() {
+        // High gain second stage makes first stage's P1dB dominate
+        // cumulative OP1dB = 20 dBm, next stage OP1dB = 40 dBm, gain = 40 dB
+        let result = crate::p1db::cascade_output_p1db(20.0, 40.0, 40.0);
+        // With 40 dB gain, first stage P1dB referred to output = 20 - 40 = -20 dBm equivalent
+        // So cascade should be well below the first stage
+        assert!(result < 20.0);
+    }
+
+    #[test]
+    fn roundtrip_multiple_gains() {
+        // Roundtrip for several gain values
+        for gain in [-20.0, -5.0, 0.0, 10.0, 30.0, 50.0] {
+            let ip1db = 5.0;
+            let op1db = crate::p1db::input_to_output_db(ip1db, gain);
+            let back = crate::p1db::output_to_input_db(op1db, gain);
+            assert!(
+                (back - ip1db).abs() < 1e-10,
+                "roundtrip failed for gain={gain}"
+            );
+        }
+    }
 }
