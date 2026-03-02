@@ -91,14 +91,59 @@ let output_p1db = p1db::input_to_output_db(5.0, 30.0);  // 34.0 dBm
 let input_p1db  = p1db::output_to_input_db(34.0, 30.0);  // 5.0 dBm
 ```
 
-## 5. Constants
+## 5. Friis Cascade (Noise)
+
+Cascade noise figure, noise factor, or noise temperature through a chain of stages using the Friis formula.
+
+```rust
+use rfconversions::noise;
+
+// LNA (NF=0.5dB, G=20dB) → Cable (NF=1dB, G=-1dB) → Mixer (NF=8dB, G=-7dB)
+let stages = vec![(0.5, 20.0), (1.0, -1.0), (8.0, -7.0)];
+let nf_total = noise::cascade_noise_figure(&stages);
+assert!((nf_total - 0.754).abs() < 0.01); // LNA dominates
+
+// Same chain in linear domain: stages are (noise_factor, gain_linear)
+let linear_stages = vec![
+    (1.1220, 100.0),   // LNA
+    (1.2589, 0.7943),  // Cable
+    (6.3096, 0.1995),  // Mixer
+];
+let f_total = noise::cascade_noise_factor(&linear_stages);
+assert!((f_total - 1.1914).abs() < 0.001);
+
+// Noise temperature cascade: stages are (Te_kelvin, gain_linear)
+let temp_stages = vec![(35.0, 100.0), (75.0, 0.794)];
+let t_total = noise::cascade_noise_temperature(&temp_stages);
+assert!((t_total - 35.75).abs() < 0.01);
+```
+
+## 6. System-Level Helpers
+
+G/T (figure of merit) and noise power spectral density N₀.
+
+```rust
+use rfconversions::noise;
+
+// G/T: 40 dBi antenna, 200 K system noise → 17.0 dB/K
+let got = noise::g_over_t(40.0, 200.0);
+assert!((got - 16.99).abs() < 0.01);
+
+// N₀: thermal noise floor at 290 K → -174 dBm/Hz
+let n0 = noise::noise_density_dbm_per_hz(290.0);
+assert!((n0 - (-174.0)).abs() < 0.1);
+```
+
+## 7. Constants
 
 Physical constants used internally, available for your own calculations.
 
 ```rust
 use rfconversions::constants;
 
-let c = constants::SPEED_OF_LIGHT; // 299_792_458.0 m/s
+let c = constants::SPEED_OF_LIGHT;  // 299_792_458.0 m/s
+let k = constants::BOLTZMANN;       // 1.380649e-23 J/K
+let t0 = constants::T0;             // 290.0 K (standard reference)
 ```
 
 ## API Summary
@@ -131,10 +176,18 @@ let c = constants::SPEED_OF_LIGHT; // 299_792_458.0 m/s
 | `noise` | `noise_factor_from_noise_temperature(f64) → f64` | Temperature → Factor |
 | `noise` | `noise_figure_from_noise_temperature(f64) → f64` | Temperature → Figure (dB) |
 | `noise` | `noise_power_from_bandwidth(f64, f64) → f64` | kTB noise power (W) |
+| `noise` | `cascade_noise_factor(&[(f64, f64)]) → f64` | Friis cascade (linear) |
+| `noise` | `cascade_noise_figure(&[(f64, f64)]) → f64` | Friis cascade (dB) |
+| `noise` | `cascade_noise_temperature(&[(f64, f64)]) → f64` | Friis cascade (Kelvin) |
+| `noise` | `g_over_t(f64, f64) → f64` | G/T figure of merit (dB/K) |
+| `noise` | `noise_density_dbm_per_hz(f64) → f64` | N₀ noise density (dBm/Hz) |
 | `p1db` | `input_to_output_db(f64, f64) → f64` | IP1dB + Gain → OP1dB |
 | `p1db` | `output_to_input_db(f64, f64) → f64` | OP1dB − Gain → IP1dB |
-| `p1db` | `cascade_output_p1db(f64, f64, f64) → f64` | Cascade OP1dB calculation |
+| `p1db` | `cascade_output_p1db(f64, f64, f64) → f64` | Cascade OP1dB (dB) |
+| `p1db` | `cascade_output_p1db_linear(f64, f64, f64) → f64` | Cascade OP1dB (linear) |
 | `constants` | `SPEED_OF_LIGHT` | 299 792 458 m/s |
+| `constants` | `BOLTZMANN` | 1.380649e-23 J/K |
+| `constants` | `T0` | 290 K reference temperature |
 
 ## License
 
