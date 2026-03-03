@@ -2,12 +2,12 @@
 
 ## Overview
 
-Rust crate providing common RF engineering unit conversions: power (watts ↔ dBm, dB ↔ linear), frequency scaling (Hz/kHz/MHz/GHz/THz + wavelength), noise (NF ↔ noise factor ↔ noise temperature), P1dB compression point conversions, physical constants, and system-level helpers (G/T, N₀). Published on crates.io (v0.7.2).
+Rust crate providing common RF engineering unit conversions: power (watts ↔ dBm, dB ↔ linear), frequency scaling (Hz/kHz/MHz/GHz/THz + wavelength), noise (NF ↔ noise factor ↔ noise temperature), P1dB compression point conversions, physical constants, and system-level helpers (G/T, N₀). Published on crates.io (v0.7.3).
 
 ## Commands
 
 ```bash
-cargo test                        # Run all 193 tests
+cargo test                        # Run all 78 tests
 cargo clippy -- -D warnings       # Lint
 cargo fmt -- --check              # Format check
 cargo doc --open                  # Generate and view API docs
