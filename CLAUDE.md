@@ -7,7 +7,7 @@ Rust crate providing common RF engineering unit conversions: power (watts ↔ dB
 ## Commands
 
 ```bash
-cargo test                        # Run all 78 tests
+cargo test                        # Run all 78 tests (v0.7.3)
 cargo clippy -- -D warnings       # Lint
 cargo fmt -- --check              # Format check
 cargo doc --open                  # Generate and view API docs
