@@ -179,9 +179,7 @@ fn p1db_input_output_roundtrip_negative_gain() {
 fn satellite_ground_terminal_receive_chain() {
     // Typical Ka-band ground terminal RX chain:
     // LNA (NF=0.5dB, G=25dB) → Waveguide (NF=0.3dB, G=-0.3dB) → Downconverter (NF=8dB, G=10dB)
-    use rfconversions::noise::{
-        cascade_noise_figure, cascade_noise_temperature, noise_temperature_from_noise_figure,
-    };
+    use rfconversions::noise::{cascade_noise_figure, noise_temperature_from_noise_figure};
 
     let stages_db = vec![(0.5, 25.0), (0.3, -0.3), (8.0, 10.0)];
     let nf_total = cascade_noise_figure(&stages_db);
