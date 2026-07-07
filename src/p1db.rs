@@ -176,7 +176,10 @@ mod tests {
 
         // Result should be dominated by the weakest stage referred to output
         // Just verify it's a reasonable value less than any single stage OP1dB
-        assert!(cumulative < 25.0, "cascade should be limited by weakest stage");
+        assert!(
+            cumulative < 25.0,
+            "cascade should be limited by weakest stage"
+        );
         assert!(cumulative > 0.0, "cascade should be positive");
     }
 
