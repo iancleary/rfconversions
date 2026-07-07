@@ -13,6 +13,15 @@ cargo fmt -- --check              # Format check
 cargo doc --open                  # Generate and view API docs
 ```
 
+## Releases
+
+Maintain the release workflow with the Forge-managed `create-release-process` skill. Execute ordinary releases with the repo-local `cut-release` flow documented in `docs/release.md`:
+
+```bash
+just cut-release --dry-run --version <semver>
+just cut-release --version <semver>
+```
+
 ## Module Map
 
 | Module | File | Description |
