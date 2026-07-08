@@ -164,5 +164,5 @@ cython_debug/
 !.vscode/settings.json
 
 # MacOS
-.DS_Storemutants.out/
+.DS_Store
 mutants.out/

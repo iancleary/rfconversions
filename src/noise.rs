@@ -454,7 +454,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "stages must not be empty")]
     fn cascade_noise_factor_empty_panics() {
-        super::cascade_noise_factor(&[]);
+        let _ = super::cascade_noise_factor(&[]);
     }
 
     #[test]
@@ -500,7 +500,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "stages must not be empty")]
     fn cascade_noise_temperature_empty_panics() {
-        super::cascade_noise_temperature(&[]);
+        let _ = super::cascade_noise_temperature(&[]);
     }
 
     #[test]
