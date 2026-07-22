@@ -6,6 +6,21 @@ Common conversion equations for RF Engineering.
 
 This guide walks through the library progressively — power, frequency, noise, and compression point conversions — with examples you can copy into your own code.
 
+## When To Use This Crate
+
+Use `rfconversions` for scalar RF math and unit normalization: dBm, dBW, watts,
+dB/linear ratios, frequency/wavelength, noise figure/factor/temperature, kTB
+noise power, G/T, N0, and P1dB conversions.
+
+If your task is an ordered RF hardware chain, use `gainlineup`. If it starts
+from `.sNp` S-parameter data, use `touchstone`. If it is an end-to-end radio
+link question involving EIRP, path loss, C/No, Eb/No, BER, margin, orbit,
+Doppler, PFD, or modulation, use `linkbudget`.
+
+Keep dB values in dB for additions/subtractions only. Convert to linear values
+before multiplying ratios, averaging, or applying formulas that require linear
+quantities.
+
 ## 1. Power Conversions
 
 Convert between watts and dBm, or between dB and linear scale.
