@@ -1,6 +1,7 @@
 # rfconversions
 
 [![Crates.io](https://img.shields.io/crates/v/rfconversions.svg)](https://crates.io/crates/rfconversions)
+[![Docs.rs](https://docs.rs/rfconversions/badge.svg)](https://docs.rs/rfconversions)
 
 Common conversion equations for RF Engineering.
 
