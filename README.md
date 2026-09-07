@@ -22,6 +22,13 @@ Keep dB values in dB for additions/subtractions only. Convert to linear values
 before multiplying ratios, averaging, or applying formulas that require linear
 quantities.
 
+## Installation
+
+```toml
+[dependencies]
+rfconversions = "0.7.5"
+```
+
 ## 1. Power Conversions
 
 Convert between watts and dBm, or between dB and linear scale.
