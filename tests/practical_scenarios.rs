@@ -84,6 +84,29 @@ fn noise_figure_roundtrip() {
 }
 
 #[test]
+fn three_stage_friis_paths_agree() {
+    // LNA, cable loss, and mixer. The same stages can be expressed as
+    // noise factor, noise figure, or equivalent noise temperature.
+    let stages_db = [(0.5, 20.0), (1.0, -1.0), (8.0, -7.0)];
+    let stages_factor: Vec<_> = stages_db
+        .iter()
+        .map(|&(nf, gain)| (noise_factor_from_noise_figure(nf), db_to_linear(gain)))
+        .collect();
+    let stages_temperature: Vec<_> = stages_factor
+        .iter()
+        .map(|&(factor, gain)| (noise_temperature_from_noise_factor(factor), gain))
+        .collect();
+
+    let factor = cascade_noise_factor(&stages_factor);
+    let figure = cascade_noise_figure(&stages_db);
+    let temperature = cascade_noise_temperature(&stages_temperature);
+
+    assert!((figure - noise_figure_from_noise_factor(factor)).abs() < 1e-12);
+    assert!((temperature - noise_temperature_from_noise_factor(factor)).abs() < 1e-10);
+    assert!(factor > stages_factor[0].0);
+}
+
+#[test]
 fn thermal_noise_floor() {
     // kTB noise power at 290K, 1 Hz bandwidth = -174 dBm/Hz
     let power_w = noise_power_from_bandwidth(290.0, 1.0);
@@ -92,6 +115,7 @@ fn thermal_noise_floor() {
         (power_dbm - (-174.0)).abs() < 0.1,
         "Thermal noise floor was {power_dbm} dBm, expected ~-174 dBm"
     );
+    assert!((noise_density_dbm_per_hz(290.0) - power_dbm).abs() < 1e-12);
 }
 
 #[test]
@@ -235,7 +259,8 @@ fn gt_ratio_components() {
     let gain_dbi = 40.0;
     let tsys = 200.0;
     let tsys_db = linear_to_db(tsys); // 10*log10(200)
-    let g_over_t = gain_dbi - tsys_db;
+    let g_over_t = rfconversions::noise::g_over_t(gain_dbi, tsys);
+    assert!((g_over_t - (gain_dbi - tsys_db)).abs() < 1e-12);
     assert!(
         (g_over_t - 16.99).abs() < 0.01,
         "G/T was {g_over_t}, expected ~16.99"
