@@ -44,7 +44,7 @@ pub fn noise_temperature_from_noise_figure(noise_figure: f64) -> f64 {
 #[doc(alias = "F")]
 #[must_use]
 pub fn noise_factor_from_noise_figure(noise_figure: f64) -> f64 {
-    10.0_f64.powf(noise_figure / 10.0)
+    crate::power::db_to_linear(noise_figure)
 }
 
 /// Convert noise temperature (Kelvin) to noise factor (linear).
@@ -94,7 +94,7 @@ pub fn noise_figure_from_noise_temperature(noise_temperature: f64) -> f64 {
 #[doc(alias = "F")]
 #[must_use]
 pub fn noise_figure_from_noise_factor(noise_factor: f64) -> f64 {
-    10.0_f64 * noise_factor.log10()
+    crate::power::linear_to_db(noise_factor)
 }
 
 /// Calculate thermal noise power (watts) from temperature and bandwidth.
@@ -151,17 +151,7 @@ pub fn noise_power_from_bandwidth(temperature: f64, bandwidth: f64) -> f64 {
 #[doc(alias = "F")]
 #[must_use]
 pub fn cascade_noise_factor(stages: &[(f64, f64)]) -> f64 {
-    assert!(!stages.is_empty(), "stages must not be empty");
-
-    let mut f_total = stages[0].0;
-    let mut cumulative_gain = stages[0].1;
-
-    for &(noise_factor, gain) in &stages[1..] {
-        f_total += (noise_factor - 1.0) / cumulative_gain;
-        cumulative_gain *= gain;
-    }
-
-    f_total
+    cascade_noise_terms(stages, 1.0)
 }
 
 /// Cascade noise figure (dB) using the Friis formula.
@@ -220,17 +210,23 @@ pub fn cascade_noise_figure(stages: &[(f64, f64)]) -> f64 {
 #[doc(alias = "Te")]
 #[must_use]
 pub fn cascade_noise_temperature(stages: &[(f64, f64)]) -> f64 {
+    cascade_noise_terms(stages, 0.0)
+}
+
+// Friis uses the same preceding gain for factor and temperature. Factor
+// contributions are F - 1; temperature contributions are T.
+fn cascade_noise_terms(stages: &[(f64, f64)], reference: f64) -> f64 {
     assert!(!stages.is_empty(), "stages must not be empty");
 
-    let mut t_total = stages[0].0;
+    let mut total = stages[0].0;
     let mut cumulative_gain = stages[0].1;
 
-    for &(temp, gain) in &stages[1..] {
-        t_total += temp / cumulative_gain;
+    for &(value, gain) in &stages[1..] {
+        total += (value - reference) / cumulative_gain;
         cumulative_gain *= gain;
     }
 
-    t_total
+    total
 }
 
 /// Calculate system figure of merit G/T in dB/K.
@@ -255,7 +251,7 @@ pub fn cascade_noise_temperature(stages: &[(f64, f64)]) -> f64 {
 #[doc(alias = "figure of merit")]
 #[must_use]
 pub fn g_over_t(antenna_gain_dbi: f64, system_noise_temperature: f64) -> f64 {
-    antenna_gain_dbi - 10.0 * system_noise_temperature.log10()
+    antenna_gain_dbi - crate::power::linear_to_db(system_noise_temperature)
 }
 
 /// Calculate noise power spectral density N₀ in dBm/Hz.
@@ -275,7 +271,7 @@ pub fn g_over_t(antenna_gain_dbi: f64, system_noise_temperature: f64) -> f64 {
 #[doc(alias = "noise density")]
 #[must_use]
 pub fn noise_density_dbm_per_hz(temperature: f64) -> f64 {
-    10.0 * (crate::constants::BOLTZMANN * temperature).log10() + 30.0
+    crate::power::watts_to_dbm(crate::constants::BOLTZMANN * temperature)
 }
 
 // Noise Figure of Passive Device
