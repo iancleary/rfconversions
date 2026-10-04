@@ -71,3 +71,12 @@ release as the final public step of a real release.
 - Keep changes minimal and aligned to the crate's RF conversion purpose.
 - Run `cargo fmt --all -- --check`, `cargo clippy --all-targets --all-features -- -D warnings`, and `cargo test --all-features` for behavior changes.
 - Claude Code guidance lives in `CLAUDE.md`; keep both files consistent when changing repo workflows.
+
+## Shared Just Interface
+
+Use `just help` to discover supported recipes. Use `just fmt-check`, `just lint`,
+`just test`, and `just doc-check` for focused verification. `just check` also
+verifies packaging and requires a clean checkout; `just ci` adds a release build.
+`just fmt` (alias `just format`) and `just lint-fix` explicitly modify source.
+Release arguments are forwarded literally by `just cut-release`; quote paths
+that contain spaces. Project-specific recipes remain optional.

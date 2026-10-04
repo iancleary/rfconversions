@@ -83,3 +83,12 @@ just cut-release --version <semver>
 - **src/lib.rs** — Module re-exports (5 public modules)
 - Each module file contains the functions and their tests
 - This is a leaf dependency used by `touchstone`, `gainlineup`, and `linkbudget`
+
+## Shared Just Interface
+
+Use `just help` to discover supported recipes. Use `just fmt-check`, `just lint`,
+`just test`, and `just doc-check` for focused verification. `just check` also
+verifies packaging and requires a clean checkout; `just ci` adds a release build.
+`just fmt` (alias `just format`) and `just lint-fix` explicitly modify source.
+Release arguments are forwarded literally by `just cut-release`; quote paths
+that contain spaces. Project-specific recipes remain optional.
