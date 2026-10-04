@@ -97,7 +97,7 @@ let factor = noise::noise_factor_from_noise_temperature(290.0); // 2.0
 let temp2 = noise::noise_temperature_from_noise_figure(6.0);  // ~864.51 K
 let nf_db2 = noise::noise_figure_from_noise_temperature(290.0); // ~3.01 dB
 
-// Noise power (W) from temperature and bandwidth
+// Noise power (W) from temperature (K) and bandwidth (Hz)
 let noise_power = noise::noise_power_from_bandwidth(290.0, 100.0e6); // kTB in watts
 ```
 
@@ -105,7 +105,7 @@ let noise_power = noise::noise_power_from_bandwidth(290.0, 100.0e6); // kTB in w
 
 Convert between input and output 1 dB compression points.
 
-The relationship is: `OP1dB = IP1dB + (Gain - 1)` (all in dB).
+The relationship is `OP1dB = IP1dB + Gain - 1`. Input and output powers use the same reference, such as dBm or dBW. Gain is the small-signal power gain in dB; at the compression point, the gain is 1 dB lower.
 
 ```rust
 use rfconversions::p1db;
@@ -114,9 +114,27 @@ let output_p1db = p1db::input_to_output_db(5.0, 30.0);  // 34.0 dBm
 let input_p1db  = p1db::output_to_input_db(34.0, 30.0);  // 5.0 dBm
 ```
 
+To append a stage, use `cascade_output_p1db` with powers in dBm or dBW and gain in dB. The linear helper takes powers in the same unit (watts or milliwatts) and a dimensionless power gain. Each result uses the input power unit or reference.
+
+The cascade estimate refers the preceding output limit through the appended stage's gain: `P_total = 1 / (1 / (P_previous * G_current) + 1 / P_current)`. Each input limit is specified at its own output. This is an engineering estimate for scalar RF budgets with stages operated in their linear region before compression. It combines reciprocal power limits; exact compression requires each device's nonlinear transfer curve. See the [model reference](https://www.rfcafe.com/references/electrical/p1db.htm).
+
+```rust
+use rfconversions::p1db;
+
+// 100 mW preceding limit, 50 mW new stage limit, linear power gain 2.
+let output_mw = p1db::cascade_output_p1db_linear(100.0, 50.0, 2.0);
+assert!((output_mw - 40.0).abs() < 1e-12);
+
+// 34 dBm preceding limit, 20 dBm new stage limit, 30 dB gain.
+let output_dbm = p1db::cascade_output_p1db(34.0, 20.0, 30.0);
+assert!((output_dbm - 19.999827107694083).abs() < 1e-10);
+```
+
 ## 5. Friis Cascade (Noise)
 
 Cascade noise figure, noise factor, or noise temperature through a chain of stages using the Friis formula.
+
+All three cascade helpers panic if the stage slice is empty.
 
 ```rust
 use rfconversions::noise;
@@ -198,16 +216,16 @@ let t0 = constants::T0;             // 290.0 K (standard reference)
 | `noise` | `noise_temperature_from_noise_figure(f64) → f64` | Figure → Temperature (K) |
 | `noise` | `noise_factor_from_noise_temperature(f64) → f64` | Temperature → Factor |
 | `noise` | `noise_figure_from_noise_temperature(f64) → f64` | Temperature → Figure (dB) |
-| `noise` | `noise_power_from_bandwidth(f64, f64) → f64` | kTB noise power (W) |
+| `noise` | `noise_power_from_bandwidth(f64, f64) → f64` | Temperature (K), bandwidth (Hz) → noise power (W) |
 | `noise` | `cascade_noise_factor(&[(f64, f64)]) → f64` | Friis cascade (linear) |
 | `noise` | `cascade_noise_figure(&[(f64, f64)]) → f64` | Friis cascade (dB) |
 | `noise` | `cascade_noise_temperature(&[(f64, f64)]) → f64` | Friis cascade (Kelvin) |
 | `noise` | `g_over_t(f64, f64) → f64` | G/T figure of merit (dB/K) |
 | `noise` | `noise_density_dbm_per_hz(f64) → f64` | N₀ noise density (dBm/Hz) |
-| `p1db` | `input_to_output_db(f64, f64) → f64` | IP1dB + Gain → OP1dB |
-| `p1db` | `output_to_input_db(f64, f64) → f64` | OP1dB − Gain → IP1dB |
-| `p1db` | `cascade_output_p1db(f64, f64, f64) → f64` | Cascade OP1dB (dB) |
-| `p1db` | `cascade_output_p1db_linear(f64, f64, f64) → f64` | Cascade OP1dB (linear) |
+| `p1db` | `input_to_output_db(f64, f64) → f64` | IP1dB + small-signal gain − 1 dB → OP1dB |
+| `p1db` | `output_to_input_db(f64, f64) → f64` | OP1dB − small-signal gain + 1 dB → IP1dB |
+| `p1db` | `cascade_output_p1db(f64, f64, f64) → f64` | Estimate cascade OP1dB (common dBm/dBW reference; gain in dB) |
+| `p1db` | `cascade_output_p1db_linear(f64, f64, f64) → f64` | Estimate cascade OP1dB (common power unit; linear power gain) |
 | `constants` | `SPEED_OF_LIGHT` | 299 792 458 m/s |
 | `constants` | `BOLTZMANN` | 1.380649e-23 J/K |
 | `constants` | `T0` | 290 K reference temperature |

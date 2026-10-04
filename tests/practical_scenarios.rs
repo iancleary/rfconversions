@@ -177,14 +177,21 @@ fn three_stage_receive_chain_p1db() {
     // Stage 3: mixer
     let cum = cascade_output_p1db(cum, 10.0, -7.0);
 
-    // The mixer's OP1dB should dominate since it has low OP1dB
-    // and preceding gain is reduced by losses. Result should be
-    // somewhere between the mixer's OP1dB and the cascade-degraded value.
-    assert!(
-        cum < 10.0,
-        "Cascade OP1dB should be less than mixer's OP1dB, got {cum}"
-    );
-    assert!(cum > -10.0, "Cascade OP1dB unreasonably low: {cum}");
+    // Refer each stage limit to the final output independently: 5, 33, 10 dBm.
+    // The LNA contributes the lowest output-referred limit after 10 dB loss.
+    // -10*log10(10^-0.5 + 10^-3.3 + 10^-1) = 3.801463248364889 dBm.
+    assert!((cum - 3.801463248364889).abs() < 1e-10);
+}
+
+#[test]
+fn three_stage_linear_p1db_with_gain_and_loss() {
+    // Stage output limits: 100, 50, 80 mW. Following gains: 2, then 0.5.
+    let first_two = cascade_output_p1db_linear(100.0, 50.0, 2.0);
+    let total = cascade_output_p1db_linear(first_two, 80.0, 0.5);
+
+    // All limits at the final output: 100, 25, 80 mW.
+    // Their reciprocals sum to 1/100 + 1/25 + 1/80 = 1/16.
+    assert!((total - 16.0).abs() < 1e-12);
 }
 
 #[test]

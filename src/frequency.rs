@@ -1,4 +1,4 @@
-/// Convert frequency (Hz) to wavelength (meters).
+/// Convert frequency (Hz) to vacuum wavelength (meters).
 ///
 /// # Examples
 ///
@@ -13,7 +13,7 @@ pub fn frequency_to_wavelength(frequency: f64) -> f64 {
     crate::constants::SPEED_OF_LIGHT / frequency
 }
 
-/// Convert wavelength (meters) to frequency (Hz).
+/// Convert vacuum wavelength (meters) to frequency (Hz).
 ///
 /// # Examples
 ///

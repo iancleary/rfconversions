@@ -118,6 +118,15 @@ fn p1db_output_to_input() {
     assert_eq!(input_p1db, 5.0);
 }
 
+#[test]
+fn p1db_cascade() {
+    let output_mw = rfconversions::p1db::cascade_output_p1db_linear(100.0, 50.0, 2.0);
+    assert!((output_mw - 40.0).abs() < 1e-12);
+
+    let output_dbm = rfconversions::p1db::cascade_output_p1db(34.0, 20.0, 30.0);
+    assert!((output_dbm - 19.999827107694083).abs() < 1e-10);
+}
+
 // === Section 5: Constants ===
 
 #[test]

@@ -97,9 +97,9 @@ pub fn noise_figure_from_noise_factor(noise_factor: f64) -> f64 {
     crate::power::linear_to_db(noise_factor)
 }
 
-/// Calculate thermal noise power (watts) from temperature and bandwidth.
+/// Calculate thermal noise power (watts) from temperature (kelvin) and bandwidth (hertz).
 ///
-/// Uses Boltzmann's constant k = 1.38 × 10⁻²³ J/K.
+/// Uses Boltzmann's constant k = 1.380649 × 10⁻²³ J/K.
 ///
 /// # Examples
 ///
@@ -161,6 +161,10 @@ pub fn cascade_noise_factor(stages: &[(f64, f64)]) -> f64 {
 ///
 /// Each stage is `(noise_figure_db, gain_db)`.
 ///
+/// # Panics
+///
+/// Panics if `stages` is empty.
+///
 /// # Examples
 ///
 /// ```
@@ -195,6 +199,10 @@ pub fn cascade_noise_figure(stages: &[(f64, f64)]) -> f64 {
 /// T_total = T₁ + T₂/G₁ + T₃/(G₁·G₂) + ...
 ///
 /// Each stage is `(noise_temperature_kelvin, gain_linear)`.
+///
+/// # Panics
+///
+/// Panics if `stages` is empty.
 ///
 /// # Examples
 ///
@@ -460,6 +468,12 @@ mod tests {
         // Should be barely above LNA NF since LNA gain dominates
         assert!(nf < 1.0, "Cascade NF should be < 1 dB, got {nf}");
         assert!(nf > 0.5, "Cascade NF should be > LNA NF, got {nf}");
+    }
+
+    #[test]
+    #[should_panic(expected = "stages must not be empty")]
+    fn cascade_noise_figure_empty_panics() {
+        let _ = super::cascade_noise_figure(&[]);
     }
 
     #[test]
