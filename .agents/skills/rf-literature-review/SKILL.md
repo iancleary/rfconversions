@@ -10,7 +10,8 @@ description: Evaluate published RF conversion and numerical methods against rfco
 - Work in the rfconversions checkout. Read `AGENTS.md`, inspect Git status, and
   preserve unrelated work.
 - Read `README.md`, `src/lib.rs`, and `docs/agent-operating-loop.md` before
-  selecting the owning module. This skill needs no separate research document.
+  selecting the owning module. Extend `docs/literature-review.md` rather than
+  starting a parallel findings page. Its recommendations are not implemented APIs.
 - A literature request permits public source retrieval, not paid services,
   purchased papers, uploaded measurements, installations, delegation, external
   publication, or runtime changes without the applicable authorization.
@@ -59,10 +60,15 @@ description: Evaluate published RF conversion and numerical methods against rfco
 8. Rank by user value, numerical risk, compatibility, and verification cost.
    Benchmark actual public conversions before claiming speedups. Prefer narrow
    formula improvements over a general unit system or simulation framework.
-9. For a substantive review, extend an existing research page if present;
-   otherwise add a clearly proposed, source-linked page under `docs/` and link it
-   from README. Do not represent a recommendation as implemented functionality
-   or duplicate the operational guide with another process document.
+9. Record each candidate with: baseline revision and owning symbol, source
+   identifier/revision and inspected equation, caller benefit, proposed signature,
+   units/domain/nonfinite policy, independent acceptance values, compatibility
+   risks, and remaining production gates. Rank numerical fixes separately from
+   new domain helpers. Include rejected or deferred ideas and why.
+10. Extend `docs/literature-review.md` and keep its README link working. Distinguish
+    source statements from our derived formulas, prototypes from public APIs,
+    and sampled evidence from accuracy or performance guarantees. Update status
+    when a proposal ships; do not leave implemented work in the candidate list.
 
 ## Verification and common failures
 
@@ -83,6 +89,46 @@ description: Evaluate published RF conversion and numerical methods against rfco
   code without checking its license.
 - If a candidate requires modulation, path loss, network matrices, or stage
   state, hand it to the owning sibling crate instead of expanding this one.
+
+## Rerun the numerical evidence
+
+The bundled [probe](scripts/numerical_probe.rs) calls the actual checkout for
+existing conversions and compares candidate formulas with independently computed
+reference literals. It is a research experiment, not a new unit-test suite or a
+replacement for production integration coverage. No paper text or third-party
+implementation is bundled.
+
+From the repository root, set `SKILL_DIR` to this complete skill folder. These
+commands use the installed Rust compiler, no network or extra dependencies, and
+write only to a new temporary directory:
+
+```bash
+SKILL_DIR="$PWD/.agents/skills/rf-literature-review"
+(
+  set -eu
+  work=$(mktemp -d)
+  trap 'rm -rf "$work"' EXIT
+  rustc --edition=2021 --crate-name rfconversions --crate-type rlib \
+    src/lib.rs --out-dir "$work"
+  rustc --edition=2021 "$SKILL_DIR/scripts/numerical_probe.rs" \
+    --extern "rfconversions=$work/librfconversions.rlib" -o "$work/probe"
+  "$work/probe"
+)
+```
+
+Direct compilation works because the library currently has no runtime
+dependencies. If that changes, use the repository's Cargo build rather than
+manually reconstructing its dependency graph. The probe intentionally prints
+current results without asserting that existing defects persist: after a fix,
+refresh the findings from the new output. Its finite samples do not cover NaN,
+infinity, signed zero, subnormals, or every platform's elementary-function
+implementation. Run the production acceptance matrix before claiming those.
+
+If references disagree, stop and check input rounding, precision, units, and
+source revisions; do not loosen tolerances to make a candidate pass. For PDF
+retrieval, check that the response is actually a PDF: a successful HTTP status
+can still return an HTML landing page. A failed extraction supplies no equation
+evidence. Remove only the temporary artifacts you created, not checkout files.
 
 ## Completion and recovery
 
