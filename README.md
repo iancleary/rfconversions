@@ -82,6 +82,12 @@ let wavelength = frequency::frequency_to_wavelength(1.0e9); // 0.299792458 m
 
 Convert between noise figure (dB), noise factor (linear), and noise temperature (K). Compute noise power from bandwidth.
 
+The direct NF↔temperature helpers avoid a noise factor rounded to one. They
+preserve the algebraic negative-temperature domain: −290 K gives −∞ dB and
+lower temperatures give NaN. Both signed-zero inputs return +0; NaN propagates.
+See [noise conversion accuracy](docs/noise-conversion-accuracy.md) for the
+numerical model, range limits, and rerunnable candidate comparisons.
+
 ```rust
 use rfconversions::noise;
 
@@ -106,12 +112,6 @@ assert!((tiny_nf / 1.4975671789767304e-18 - 1.0).abs() < 1e-14);
 // Noise power (W) from temperature (K) and bandwidth (Hz)
 let noise_power = noise::noise_power_from_bandwidth(290.0, 100.0e6); // kTB in watts
 ```
-
-The direct NF↔temperature helpers avoid a noise factor rounded to one. They
-preserve the algebraic negative-temperature domain: −290 K gives −∞ dB and
-lower temperatures give NaN. Both signed-zero inputs return +0; NaN propagates.
-See [noise conversion accuracy](docs/noise-conversion-accuracy.md) for the
-numerical model, range limits, and rerunnable candidate comparisons.
 
 ## 4. P1dB Compression Point
 
