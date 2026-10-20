@@ -2,10 +2,30 @@
 
 ## Status and mental model
 
-These are **production proposals, not implemented features**. The review uses
-`061c868` (v0.7.7 crate manifest) as its baseline. Runtime source and public API
-are unchanged. The repeatable procedure and numerical probe live in the
+This page records the original proposals against baseline `061c868` (v0.7.7
+crate manifest). Runtime source and public API are unchanged on this research
+branch. The three implementations are now in **independent, unmerged PRs targeting
+main**; accept any subset without merging this research PR first. The final
+implementations include boundary handling beyond the sketches below.
+
+| Idea | Implementation PR | Selected approach and comparison evidence |
+| --- | --- | --- |
+| Direct NF↔Te | [#37](https://github.com/iancleary/rfconversions/pull/37) | Range-aware direct formulas; [three-formula comparison](https://github.com/iancleary/rfconversions/blob/fix/stable-noise-temperature/docs/noise-conversion-accuracy.md) |
+| Independent power sum | [#38](https://github.com/iancleary/rfconversions/pull/38) | Max-shifted `ln_1p`; [three-formula comparison](https://github.com/iancleary/rfconversions/blob/feat/log-domain-power-addition/docs/power-addition.md) |
+| Y-factor→Te | [#39](https://github.com/iancleary/rfconversions/pull/39) | Scaled fused numerator with overflow fallback; [six-formula comparison](https://github.com/iancleary/rfconversions/blob/feat/y-factor-temperature/docs/y-factor-calibration.md) |
+
+Each branch passed `just check` independently, including packaging. A disposable
+checkout with all three final patches also passed; every pair of branch tips
+merged without conflicts. An initial README conflict was removed by separating
+the additions. A fresh read-only review found no production blockers and prompted
+explicit extreme-range limitations plus a stricter nonfinite comparison check.
+These checks used Rust 1.99; the declared Rust 1.70 minimum was not separately run.
+No PR has been merged or released as part of this work.
+
+The repeatable procedure and original numerical probe live in the
 [RF literature-review skill](../.agents/skills/rf-literature-review/SKILL.md).
+Use each implementation guide for its final candidate comparisons and known
+limits; the baseline observations and sketches below remain historical evidence.
 
 A scalar library has two different opportunities: compute an existing formula
 more faithfully, or supply a missing formula with an unambiguous convention.
@@ -216,16 +236,20 @@ Neither these Decimal calculations nor the probe validate calibration hardware.
 
 ## Production sequence and deferred scope
 
-1. Implement candidate 1 alone after approval. Update nearest Rustdoc, README API
-   summary, and meaningful existing integration coverage together. Preserve panic
-   contracts and audit exact-equality tests before accepting rounding changes.
-2. Review the reference/nonfinite contract for candidate 2 before adding it.
-3. Confirm a consumer for candidate 3 and its diagnostic policy; document the
-   measurement assumptions before exposing it.
-4. For each behavior change, run formatting, Clippy with warnings denied,
-   all-feature tests, rustdoc checks, and the repository's clean-checkout packaging
-   gate (`just check`). This research-only change does not satisfy those future
-   implementation gates merely by having an executable prototype.
+1. Review any subset of the independent PRs above. Their Rustdoc, README summaries,
+   runnable examples, and integration coverage accompany the implementation.
+   Merging one does not require the others.
+2. For #37, review changed rounding and signed-zero behavior. For #38, review the
+   common-reference and independent-power contract. For #39, review the invalid
+   input/negative diagnostic policy and confirm the calibration assumptions for
+   the intended consumer; no instrument was tested.
+3. Use the implementation guides' acceptance evidence, not this page's original
+   sketch probe, to judge the final algorithms. The power helper can still lose
+   extreme subnormal corrections; Y-factor rounding can shift the overflow
+   boundary. Neither promises correctly rounded results over all `f64` inputs.
+4. Re-run `just check` after any requested changes. Keep the branches independent
+   and repeat combined-patch verification if their shared documentation or APIs
+   change. Update the status links when individual PRs merge.
 
 A passive-loss/physical-temperature helper is another plausible gap (there is
 already a comment in `src/noise.rs`), but this review did not verify a primary

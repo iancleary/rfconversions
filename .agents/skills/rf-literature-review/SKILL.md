@@ -54,8 +54,11 @@ description: Evaluate published RF conversion and numerical methods against rfco
      small-signal gain. Do not replace the crate's convention from memory.
 7. Define independent acceptance references before recommending a change:
    analytic points, dimensional checks, authoritative constants, and, where
-   numerical range matters, independent high-precision values. Include near-zero
-   differences, extreme finite values, singular/domain boundaries, and ordinary
+   numerical range matters, independent high-precision values. Generate numerical
+   oracles from the exact binary inputs, not only their ideal decimal spellings.
+   Increase Decimal precision until rounded references stabilize; use exact
+   rational arithmetic for rational formulas. Include near-zero differences,
+   subnormals, extreme finite values, singular/domain boundaries, and ordinary
    RF operating values. A round trip or shared dependency is insufficient alone.
 8. Rank by user value, numerical risk, compatibility, and verification cost.
    Benchmark actual public conversions before claiming speedups. Prefer narrow
@@ -90,9 +93,29 @@ description: Evaluate published RF conversion and numerical methods against rfco
 - If a candidate requires modulation, path loss, network matrices, or stage
   state, hand it to the owning sibling crate instead of expanding this one.
 
+## When implementation is authorized
+
+- Give independently selectable ideas separate branches/worktrees and focused
+  commits. Do not create dependencies merely because two helpers share a module.
+- Compare the baseline, simple formula, and any necessary range-aware alternative
+  before choosing. Retain a small skill-owned experiment and its independent
+  reference generator; document the selected algorithm and rejected alternatives
+  in the owning feature guide. The implementation links in `docs/literature-review.md`
+  lead to the completed comparisons for this review.
+- Call the actual public API in the comparison. Check NaN and infinity signs
+  explicitly; matching `is_finite()` values alone do not establish agreement.
+  Verify critical evidence checks with negative controls in disposable copies.
+- Keep sampled accuracy claims scoped to their inputs. A newly found extreme case
+  either changes the implementation and its acceptance criteria, or becomes an
+  explicit limitation; do not silently relax a failing gate.
+- Run required gates for each branch and the combined final patches. Check shared
+  README edits for conflicts even when code has no dependency. Publication and
+  merging still require their own authorization.
+
 ## Rerun the numerical evidence
 
-The bundled [probe](scripts/numerical_probe.rs) calls the actual checkout for
+This original sketch probe does not replace the final comparisons in the
+implementation guides. The bundled [probe](scripts/numerical_probe.rs) calls the actual checkout for
 existing conversions and compares candidate formulas with independently computed
 reference literals. It is a research experiment, not a new unit-test suite or a
 replacement for production integration coverage. No paper text or third-party
