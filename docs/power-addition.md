@@ -78,6 +78,18 @@ an output near zero. For the exact `f64` input pair
 That limitation is different from avoidably rounding away the tiny,
 non-cancelling correction at `(0, -160)`.
 
+There is also an extreme-subnormal limitation, distinct from final-result
+rounding: an actual-API independent review found `add_power_db(0.0, -3238.0)`
+returns zero. The exact-input Decimal reference is approximately
+`6.883103678918900664602809690351e-324` dB, which rounds to the smallest positive
+`f64` subnormal (`5e-324`). Scratch calculations at both 500 and 800 digits
+agreed on that rounded reference. Here the `powf` term underflows to zero
+*before* multiplication by `10/ln(10)`; `ln_1p` cannot recover it. Thus not all
+representable corrections survive the intermediates. Independent review found
+no ordinary RF regression, and universal correct rounding was not promised.
+This observed approximation is documented as a limitation, not pinned as
+mandatory test behavior.
+
 ## Alternatives and observed decision
 
 The retained probe compares three implementations on the same inputs:

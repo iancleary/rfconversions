@@ -64,7 +64,11 @@ pub fn linear_to_db(value: f64) -> f64 {
 ///
 /// The finite calculation stays in the log domain to avoid intermediate
 /// overflow and preserve small contributions using `ln_1p`. The final `f64`
-/// result can still round away a contribution.
+/// result can still round away a contribution. At extreme separations the
+/// `powf` term can also underflow before multiplication by `10/ln(10)`:
+/// `add_power_db(0.0, -3238.0)` has been observed to return zero although the
+/// exact-input reference rounds to the smallest positive subnormal. Not every
+/// representable correction survives; universal correct rounding is not promised.
 ///
 /// NaN in either input returns NaN, even with infinity. Otherwise positive
 /// infinity returns positive infinity. Negative infinity represents zero
