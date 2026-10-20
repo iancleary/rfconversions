@@ -111,13 +111,25 @@ rounded-ratio near-zero cases. Results, in the table's order:
 
 ```text
 not correctly rounded:       2181, 1435, 626, 1183, 352, 313
-finite/infinite mismatches:   274,    1, 274,    0,   0,   0
+nonfinite classification mismatches: 274, 1, 274, 0, 0, 0
 ```
 
-The selected version's worst finite distance was one ULP. This is sampled
-evidence, not exhaustive f64 verification, an all-domain ULP guarantee, or a
-performance claim. The focused integration tests pin independent analytic and
+Within these 4,011 samples only, the selected version had no nonfinite
+classification mismatches and its worst finite distance was one ULP. This is
+sampled evidence, not exhaustive f64 verification, an all-domain ULP guarantee,
+or a performance claim. The focused integration tests pin independent analytic and
 exact-rational expectations rather than duplicating the implementation.
+
+An actual-API independent review also identified an overflow-boundary limit
+outside that sample: `noise_temperature_from_y_factor(1.1,
+1.7976931348623175e307, 1e291)` returns positive infinity, while the correctly
+rounded exact-input `Fraction` oracle returns `f64::MAX`. The exact mathematical
+result is above `f64::MAX` by about 0.448854 ULP, but below the nearest-rounding
+overflow threshold (half an ULP above `f64::MAX`). Rounding the finite FMA
+numerator can shift the output classification there. This is allowed by the
+existing mathematical-overflow contract, but there is no universal guarantee of
+a correctly rounded overflow boundary. This limitation is not an additional
+case in the sampled classification gate.
 
 ## Rerun the offline evidence
 
@@ -137,7 +149,13 @@ rustfmt --edition 2021 --check \
   .agents/skills/rf-literature-review/scripts/compare_y_factor.rs
 ```
 
-The probe calls the actual public API for the selected candidate. The generator
+The probe calls the actual public API for the selected candidate. Its gate
+rejects any NaN, finite/nonfinite mismatch, or wrong-sign infinity, and requires
+at most one ULP distance when both values are finite. Disposable probe copies
+that replaced the expected-positive-infinity sample's selected result with NaN
+or negative infinity both failed the classification gate; production files were
+not changed. These checks apply to the supplied sample, not the whole domain.
+The generator
 uses standard-library `Fraction` throughout, followed by correctly rounded
 rational-to-float conversion, avoiding any finite-precision oracle cancellation
 or need to tune precision. For the downstream NF reference, Decimal at 80 and

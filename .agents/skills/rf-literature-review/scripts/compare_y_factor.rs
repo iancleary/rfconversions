@@ -45,7 +45,7 @@ fn main() {
             if actual != expected {
                 counts[i] += 1;
             }
-            if actual.is_finite() != expected.is_finite() {
+            if (!actual.is_finite() || !expected.is_finite()) && actual != expected {
                 range_failures[i] += 1;
             }
             if actual.is_finite() && expected.is_finite() {
@@ -69,7 +69,7 @@ fn main() {
         "{total} cases; order: textbook, rearranged, fused, piecewise, bounded, scaled-bounded"
     );
     println!("not correctly rounded: {counts:?}");
-    println!("finite/infinite mismatches: {range_failures:?}");
+    println!("nonfinite classification mismatches: {range_failures:?}");
     println!("worst finite ULP distance: {worst_ulp:?}");
     assert!(total > 0, "no reference cases supplied");
     assert_eq!(range_failures[5], 0, "public API range regression");
