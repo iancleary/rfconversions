@@ -240,13 +240,13 @@ let t0 = constants::T0;             // 290.0 K (standard reference)
 | `noise` | `noise_temperature_from_noise_figure(f64) → f64` | Figure → Temperature (K) |
 | `noise` | `noise_factor_from_noise_temperature(f64) → f64` | Temperature → Factor |
 | `noise` | `noise_figure_from_noise_temperature(f64) → f64` | Temperature → Figure (dB) |
-| `noise` | `noise_temperature_from_y_factor(f64, f64, f64) → f64` | Linear power Y, hot K, cold K → receiver temperature (K) |
 | `noise` | `noise_power_from_bandwidth(f64, f64) → f64` | Temperature (K), bandwidth (Hz) → noise power (W) |
 | `noise` | `cascade_noise_factor(&[(f64, f64)]) → f64` | Friis cascade (linear) |
 | `noise` | `cascade_noise_figure(&[(f64, f64)]) → f64` | Friis cascade (dB) |
 | `noise` | `cascade_noise_temperature(&[(f64, f64)]) → f64` | Friis cascade (Kelvin) |
 | `noise` | `g_over_t(f64, f64) → f64` | G/T figure of merit (dB/K) |
 | `noise` | `noise_density_dbm_per_hz(f64) → f64` | N₀ noise density (dBm/Hz) |
+| `noise` | `noise_temperature_from_y_factor(f64, f64, f64) → f64` | Linear power Y, hot K, cold K → receiver temperature (K) |
 | `p1db` | `input_to_output_db(f64, f64) → f64` | IP1dB + small-signal gain − 1 dB → OP1dB |
 | `p1db` | `output_to_input_db(f64, f64) → f64` | OP1dB − small-signal gain + 1 dB → IP1dB |
 | `p1db` | `cascade_output_p1db(f64, f64, f64) → f64` | Estimate cascade OP1dB (common dBm/dBW reference; gain in dB) |
