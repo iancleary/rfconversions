@@ -1,3 +1,13 @@
+<!-- rf-crates-repository-handoff -->
+> **Development and issue tracking have moved to [iancleary/rf-crates](https://github.com/iancleary/rf-crates).**
+>
+> The `rfconversions` crate retains its name, MIT license, and independent version.
+> Current source: [crates/rfconversions](https://github.com/iancleary/rf-crates/tree/main/crates/rfconversions).
+> Open work has been rehomed with source links and dependency ordering; see the
+> [handoff record](https://github.com/iancleary/rf-crates/blob/main/docs/repository-migration.md).
+> This repository preserves historical releases and review discussions. Its
+> legacy CI/publication workflow is disabled. Do not create new releases here.
+
 # rfconversions
 
 [![Crates.io](https://img.shields.io/crates/v/rfconversions.svg)](https://crates.io/crates/rfconversions)
